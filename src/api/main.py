@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.config import get_settings
-from src.api.routes import auth, chat, health, documents, metrics as metrics_routes
+from src.api.routes import auth, chat, health, documents, metrics as metrics_routes, evaluation
 from src.api.observability import RequestTracingMiddleware
 from src.api.cache import close_redis
 from src.storage.database import init_db
@@ -69,6 +69,7 @@ app.include_router(auth.router, prefix="/api/v1", tags=["Auth"])
 app.include_router(chat.router, prefix="/api/v1", tags=["Chat"])
 app.include_router(documents.router, prefix="/api/v1", tags=["Documents"])
 app.include_router(metrics_routes.router, prefix="/api/v1", tags=["Metrics"])
+app.include_router(evaluation.router, prefix="/api/v1", tags=["Evaluation"])
 
 
 @app.get("/")
