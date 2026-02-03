@@ -1,19 +1,19 @@
 # GenAI Auto 🚗
 
-Sistema multi-agente de IA para atendimento ao cliente automotivo - desenvolvido para montadoras de veículos.
+Multi-agent AI system for automotive customer service - designed for vehicle manufacturers.
 
 ## Stack
 
-| Componente | Tecnologia | Descrição |
-|------------|------------|-----------|
-| **LLM** | OpenRouter | Modelos gratuitos (Llama 3.1, Gemma, Mistral) |
+| Component | Technology | Description |
+|-----------|------------|-------------|
+| **LLM** | OpenRouter | Free models (Llama 3.1, Gemma, Mistral) |
 | **Embeddings** | OpenRouter | nomic-embed-text-v1.5 |
-| **Vector DB** | PostgreSQL + pgvector | Armazenamento e busca vetorial |
-| **Cache** | Redis | Cache de respostas e embeddings |
-| **API** | FastAPI | REST API com OpenAPI docs |
-| **Auth** | JWT built-in | Autenticação leve sem serviço externo |
+| **Vector DB** | PostgreSQL + pgvector | Vector storage and search |
+| **Cache** | Redis | Response and embedding cache |
+| **API** | FastAPI | REST API with OpenAPI docs |
+| **Auth** | JWT built-in | Lightweight auth, no external service |
 
-## Arquitetura
+## Architecture
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌──────────────────────────────────┐
@@ -26,7 +26,7 @@ Sistema multi-agente de IA para atendimento ao cliente automotivo - desenvolvido
                     ▼                                  ▼                                  ▼
         ┌───────────────────┐          ┌───────────────────────┐          ┌───────────────────────┐
         │  Agent: Specs     │          │  Agent: Maintenance   │          │  Agent: Troubleshoot  │
-        │  (RAG + Manuais)  │          │  (Agendamento)        │          │  (Diagnóstico)        │
+        │  (RAG + Manuals)  │          │  (Scheduling)         │          │  (Diagnostics)        │
         └─────────┬─────────┘          └───────────────────────┘          └───────────────────────┘
                   │
                   ▼
@@ -46,64 +46,64 @@ Sistema multi-agente de IA para atendimento ao cliente automotivo - desenvolvido
         └───────────────────┘
 ```
 
-## Agentes
+## Agents
 
-| Agente | Função | Capabilities |
-|--------|--------|--------------|
-| **Specs** | Documentação técnica | RAG sobre manuais, specs, FAQs |
-| **Maintenance** | Agendamento | Marcar revisões, consultar histórico |
-| **Troubleshoot** | Diagnóstico | Árvore de decisão, análise de sintomas |
+| Agent | Function | Capabilities |
+|-------|----------|--------------|
+| **Specs** | Technical documentation | RAG over manuals, specs, FAQs |
+| **Maintenance** | Scheduling | Book services, check history |
+| **Troubleshoot** | Diagnostics | Decision tree, symptom analysis |
 
 ## Quick Start
 
-### 1. Clone e configure
+### 1. Clone and configure
 
 ```bash
 git clone https://github.com/thebotjarvison/genai-auto.git
 cd genai-auto
 
-# Copiar configuração
+# Copy configuration
 cp .env.example .env
 
-# Editar .env com sua chave OpenRouter
+# Edit .env with your OpenRouter key
 # OPENROUTER_API_KEY=sk-or-v1-xxx
 # JWT_SECRET_KEY=$(openssl rand -hex 32)
 ```
 
-### 2. Suba os containers
+### 2. Start containers
 
 ```bash
 docker-compose up -d
 ```
 
-### 3. Popule a base de conhecimento
+### 3. Seed the knowledge base
 
 ```bash
 docker-compose exec api python scripts/seed_knowledge_base.py
 ```
 
-### 4. Acesse a API
+### 4. Access the API
 
 - **API**: http://localhost:8000
 - **Docs**: http://localhost:8000/docs
-- **PGAdmin** (opcional): http://localhost:5050
+- **PGAdmin** (optional): http://localhost:5050
 
 ## API Endpoints
 
-### Autenticação
+### Authentication
 
 ```bash
-# Registrar usuário
+# Register user
 curl -X POST http://localhost:8000/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "password": "senha123", "name": "João"}'
+  -d '{"email": "user@example.com", "password": "password123", "name": "John"}'
 
 # Login
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "password": "senha123"}'
+  -d '{"email": "user@example.com", "password": "password123"}'
 
-# Resposta: { "access_token": "xxx", "refresh_token": "xxx" }
+# Response: { "access_token": "xxx", "refresh_token": "xxx" }
 ```
 
 ### Chat
@@ -112,91 +112,91 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 curl -X POST http://localhost:8000/api/v1/chat \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"message": "Qual a potência do motor do GenAuto X1?"}'
+  -d '{"message": "What is the engine power of the GenAuto X1?"}'
 ```
 
-### RAG - Base de Conhecimento
+### RAG - Knowledge Base
 
 ```bash
-# Upload de documento
+# Upload document
 curl -X POST http://localhost:8000/api/v1/documents/upload \
   -H "Authorization: Bearer <token>" \
   -F "file=@manual.pdf" \
   -F "document_type=manual"
 
-# Ingerir texto
+# Ingest text
 curl -X POST http://localhost:8000/api/v1/documents/ingest-text \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "text": "Conteúdo do documento...",
-    "source": "nome_do_documento",
+    "text": "Document content...",
+    "source": "document_name",
     "document_type": "manual"
   }'
 
-# Busca semântica
+# Semantic search
 curl -X POST http://localhost:8000/api/v1/documents/search \
   -H "Content-Type: application/json" \
-  -d '{"query": "como trocar óleo", "top_k": 5}'
+  -d '{"query": "how to change oil", "top_k": 5}'
 
-# Listar documentos
+# List documents
 curl -X GET http://localhost:8000/api/v1/documents \
   -H "Authorization: Bearer <token>"
 
-# Estatísticas
+# Statistics
 curl -X GET http://localhost:8000/api/v1/documents/stats
 
-# Deletar documento
+# Delete document
 curl -X DELETE http://localhost:8000/api/v1/documents/manual.pdf \
   -H "Authorization: Bearer <token>"
 ```
 
 ## RAG Pipeline
 
-### Formatos Suportados
+### Supported Formats
 - PDF (`.pdf`)
 - Word (`.docx`)
-- Texto (`.txt`)
+- Text (`.txt`)
 - Markdown (`.md`)
 
-### Estratégias de Chunking
-- `recursive` - Padrão, respeita limites de sentença
-- `semantic` - Baseado em parágrafos
-- `markdown` - Respeita estrutura de headers
-- `fixed` - Tamanho fixo
+### Chunking Strategies
+- `recursive` - Default, respects sentence boundaries
+- `semantic` - Paragraph-based
+- `markdown` - Respects header structure
+- `fixed` - Fixed size chunks
 
-### Tipos de Documento
-- `manual` - Manuais do proprietário
-- `spec` - Especificações técnicas
-- `guide` - Guias de recursos
-- `faq` - Perguntas frequentes
-- `troubleshoot` - Diagnóstico e problemas
+### Document Types
+- `manual` - Owner manuals
+- `spec` - Technical specifications
+- `guide` - Feature guides
+- `faq` - Frequently asked questions
+- `troubleshoot` - Diagnostics and problems
 
-## Features de Produção
+## Production Features
 
-### 🔒 Segurança
-- **JWT Auth**: Autenticação stateless com refresh tokens
-- **PII Masking**: Máscara automática de CPF, CNPJ, VIN, placas em logs
-- **Rate Limiting**: Proteção contra abuso
+### 🔒 Security
+- **JWT Auth**: Stateless authentication with refresh tokens
+- **PII Masking**: Auto-mask SSN, VIN, license plates in logs
+- **Rate Limiting**: Abuse protection
 
-### 📊 Observabilidade
-- **Request Tracing**: X-Request-ID em todas as requisições
-- **Token Usage**: Monitoramento de consumo de tokens
-- **Metrics**: `/api/v1/metrics` para monitoramento
+### 📊 Observability
+- **Request Tracing**: X-Request-ID on all requests
+- **Token Usage**: Token consumption monitoring
+- **Metrics**: `/api/v1/metrics` for monitoring
 
 ### 👋 Human Handoff
-- **Confidence Threshold**: Escala para humano se confiança < 70%
-- **Detecção de Intent**: Reconhece pedidos de atendimento humano
-- **Safety Detection**: Prioriza questões de segurança
+- **Confidence Threshold**: Escalate to human if confidence < 70%
+- **Intent Detection**: Recognizes human assistance requests
+- **Safety Detection**: Prioritizes safety-related issues
 
 ### ⚡ Performance
-- **Response Cache**: Redis cache para respostas frequentes
-- **Embedding Cache**: Cache de embeddings para queries repetidas
-- **Connection Pooling**: Pool de conexões PostgreSQL
+- **Response Cache**: Redis cache for frequent responses
+- **Embedding Cache**: Cache embeddings for repeated queries
+- **Connection Pooling**: PostgreSQL connection pool
 
-## Configuração
+## Configuration
 
-### Variáveis de Ambiente
+### Environment Variables
 
 ```bash
 # LLM (OpenRouter)
@@ -225,16 +225,16 @@ HUMAN_SUPPORT_WEBHOOK=https://your-webhook.com
 MASK_PII=true
 ```
 
-### Modelos Gratuitos (OpenRouter)
+### Free Models (OpenRouter)
 
-| Modelo | ID |
-|--------|-----|
+| Model | ID |
+|-------|-----|
 | Llama 3.1 8B | `meta-llama/llama-3.1-8b-instruct:free` |
 | Gemma 2 9B | `google/gemma-2-9b-it:free` |
 | Mistral 7B | `mistralai/mistral-7b-instruct:free` |
 | Qwen 2 7B | `qwen/qwen-2-7b-instruct:free` |
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 genai-auto/
@@ -265,22 +265,22 @@ genai-auto/
 └── requirements.txt
 ```
 
-## Desenvolvimento
+## Development
 
-### Rodar localmente
+### Run locally
 
 ```bash
-# Instalar dependências
+# Install dependencies
 pip install -r requirements.txt
 
-# Subir apenas DB e Redis
+# Start only DB and Redis
 docker-compose up -d postgres redis
 
-# Rodar API
+# Run API
 uvicorn src.api.main:app --reload
 ```
 
-### Testes
+### Tests
 
 ```bash
 pytest tests/ -v
@@ -288,8 +288,8 @@ pytest tests/ -v
 
 ## License
 
-MIT License - veja [LICENSE](LICENSE) para detalhes.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**GenAI Auto** | Sistema Multi-Agente para Atendimento Automotivo
+**GenAI Auto** | Multi-Agent System for Automotive Customer Service

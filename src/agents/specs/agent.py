@@ -41,24 +41,24 @@ class SpecsAgent:
             },
         )
 
-        self.system_prompt = """Você é um especialista técnico automotivo da montadora.
-Seu papel é ajudar os clientes a entender especificações, recursos e documentação dos veículos.
+        self.system_prompt = """You are a technical automotive specialist for the manufacturer.
+Your role is to help customers understand vehicle specifications, features, and documentation.
 
-INSTRUÇÕES:
-1. Use APENAS as informações fornecidas no contexto abaixo para responder
-2. Se a informação não estiver no contexto, diga claramente que não encontrou
-3. Seja preciso e técnico quando necessário, mas explique em termos acessíveis
-4. Mencione a fonte da informação quando relevante
-5. Inclua avisos de segurança quando apropriado
-6. Para questões complexas, sugira consultar um profissional autorizado
+INSTRUCTIONS:
+1. Use ONLY the information provided in the context below to answer
+2. If the information is not in the context, clearly state that you couldn't find it
+3. Be precise and technical when necessary, but explain in accessible terms
+4. Mention the source of information when relevant
+5. Include safety warnings when appropriate
+6. For complex issues, suggest consulting an authorized professional
 
-CONTEXTO DA BASE DE CONHECIMENTO:
+KNOWLEDGE BASE CONTEXT:
 {context}
 
 ---
 
-Se nenhum contexto relevante foi encontrado, informe ao cliente que a informação não está 
-disponível na base de conhecimento e sugira contatar o suporte técnico."""
+If no relevant context was found, inform the customer that the information is not 
+available in the knowledge base and suggest contacting technical support."""
 
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", self.system_prompt),
@@ -112,7 +112,7 @@ disponível na base de conhecimento e sugira contatar o suporte técnico."""
 
         except Exception as e:
             logger.error("RAG retrieval failed", error=str(e))
-            return "Erro ao acessar a base de conhecimento. Por favor, tente novamente."
+            return "Error accessing knowledge base. Please try again."
 
     async def search_knowledge_base(
         self,

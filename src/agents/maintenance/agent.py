@@ -29,7 +29,6 @@ def check_available_slots(service_type: str, preferred_date: str) -> str:
         preferred_date: Preferred date in YYYY-MM-DD format
     """
     # TODO: Integrate with actual scheduler API
-    # Returning mock data for now
     return f"""Available slots for {service_type} on {preferred_date}:
 - 09:00 AM
 - 11:30 AM

@@ -15,25 +15,25 @@ class PIIMasker:
 
     # Regex patterns for common PII
     PATTERNS = {
-        "cpf": {
-            "pattern": r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b",
-            "mask": "***.***.***-**",
-            "description": "CPF (Brazilian ID)",
-        },
-        "cnpj": {
-            "pattern": r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b",
-            "mask": "**.***.***/****.‐**",
-            "description": "CNPJ (Brazilian Company ID)",
+        "ssn": {
+            "pattern": r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            "mask": "***-**-****",
+            "description": "Social Security Number (US)",
         },
         "email": {
             "pattern": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
             "mask": "***@***.***",
             "description": "Email address",
         },
-        "phone_br": {
-            "pattern": r"\b(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?)?\d{4}[-.\s]?\d{4}\b",
-            "mask": "(**) *****-****",
-            "description": "Brazilian phone number",
+        "phone_us": {
+            "pattern": r"\b(?:\+1\s?)?(?:\(?\d{3}\)?\s?)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
+            "mask": "(***) ***-****",
+            "description": "US phone number",
+        },
+        "phone_intl": {
+            "pattern": r"\b\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}\b",
+            "mask": "+** *** *** ****",
+            "description": "International phone number",
         },
         "credit_card": {
             "pattern": r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
@@ -45,15 +45,15 @@ class PIIMasker:
             "mask": "*****************",
             "description": "Vehicle Identification Number",
         },
-        "license_plate_br": {
-            "pattern": r"\b[A-Z]{3}[-\s]?\d{1}[A-Z0-9]{1}\d{2}\b",
-            "mask": "***-****",
-            "description": "Brazilian license plate (Mercosul)",
+        "license_plate_us": {
+            "pattern": r"\b[A-Z0-9]{1,7}\b",
+            "mask": "*******",
+            "description": "US license plate",
         },
-        "license_plate_old": {
-            "pattern": r"\b[A-Z]{3}[-\s]?\d{4}\b",
-            "mask": "***-****",
-            "description": "Brazilian license plate (old format)",
+        "drivers_license": {
+            "pattern": r"\b[A-Z]\d{7,8}\b",
+            "mask": "*********",
+            "description": "Driver's license number",
         },
     }
 

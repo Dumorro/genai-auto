@@ -72,45 +72,45 @@ class HumanHandoffManager:
 
         # Check for explicit user request
         escalation_phrases = [
-            "falar com humano",
-            "falar com atendente",
-            "falar com pessoa",
-            "atendimento humano",
             "speak to human",
             "talk to agent",
             "human support",
             "real person",
+            "talk to someone",
+            "speak to someone",
+            "customer service",
+            "representative",
         ]
         if any(phrase in user_message.lower() for phrase in escalation_phrases):
             return True, EscalationReason.USER_REQUEST
 
         # Check for sensitive topics
         sensitive_keywords = [
-            "acidente",
-            "recall",
-            "processo",
-            "advogado",
-            "lesão",
-            "ferimento",
             "accident",
             "injury",
             "lawsuit",
             "legal",
+            "recall",
+            "lawyer",
+            "attorney",
+            "sue",
+            "compensation",
+            "damage claim",
         ]
         if any(keyword in user_message.lower() for keyword in sensitive_keywords):
             return True, EscalationReason.SENSITIVE_TOPIC
 
         # Check for safety concerns
         safety_keywords = [
-            "freio não funciona",
             "brakes not working",
+            "brake failure",
             "airbag",
-            "vazamento combustível",
             "fuel leak",
-            "fumaça",
+            "gas leak",
             "smoke",
-            "fogo",
             "fire",
+            "burning smell",
+            "steering failure",
         ]
         if any(keyword in user_message.lower() for keyword in safety_keywords):
             return True, EscalationReason.SAFETY_CONCERN
@@ -175,43 +175,43 @@ class HumanHandoffManager:
         """Get user-friendly escalation message."""
         messages = {
             EscalationReason.LOW_CONFIDENCE: (
-                "Entendo que sua questão é complexa. Vou transferir você para um "
-                "de nossos especialistas que poderá ajudá-lo melhor. Por favor, aguarde."
+                "I understand your question is complex. I'm transferring you to one "
+                "of our specialists who can better assist you. Please hold."
             ),
             EscalationReason.USER_REQUEST: (
-                "Claro! Estou transferindo você para um atendente humano. "
-                "Por favor, aguarde um momento."
+                "Of course! I'm connecting you to a human representative. "
+                "Please wait a moment."
             ),
             EscalationReason.SENSITIVE_TOPIC: (
-                "Este assunto requer atenção especial de nossa equipe. "
-                "Um especialista entrará em contato em breve."
+                "This matter requires special attention from our team. "
+                "A specialist will contact you shortly."
             ),
             EscalationReason.COMPLEX_ISSUE: (
-                "Sua situação precisa de uma análise mais detalhada. "
-                "Estou conectando você com um técnico especializado."
+                "Your situation needs a more detailed analysis. "
+                "I'm connecting you with a specialized technician."
             ),
             EscalationReason.REPEATED_FAILURE: (
-                "Peço desculpas pela dificuldade. Vou transferi-lo para um "
-                "atendente que poderá resolver seu problema diretamente."
+                "I apologize for the difficulty. I'm transferring you to a "
+                "representative who can resolve your issue directly."
             ),
             EscalationReason.SAFETY_CONCERN: (
-                "⚠️ Questões de segurança são nossa prioridade. Um especialista "
-                "entrará em contato imediatamente para ajudá-lo."
+                "⚠️ Safety concerns are our priority. A specialist "
+                "will contact you immediately to assist."
             ),
         }
-        return messages.get(reason, "Transferindo para atendimento humano...")
+        return messages.get(reason, "Transferring to human support...")
 
     def get_handoff_response(self, escalation: EscalationResponse) -> str:
         """Format response to user about handoff."""
         response = escalation.message
         
         if escalation.estimated_wait_time:
-            response += f"\n\nTempo estimado de espera: {escalation.estimated_wait_time} minutos."
+            response += f"\n\nEstimated wait time: {escalation.estimated_wait_time} minutes."
         
         if escalation.agent_name:
-            response += f"\n\nVocê será atendido por: {escalation.agent_name}"
+            response += f"\n\nYou will be assisted by: {escalation.agent_name}"
         
-        response += f"\n\nSeu número de protocolo: {escalation.escalation_id}"
+        response += f"\n\nYour reference number: {escalation.escalation_id}"
         
         return response
 

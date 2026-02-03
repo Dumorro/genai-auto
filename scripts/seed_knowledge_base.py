@@ -13,404 +13,404 @@ from src.rag.pipeline import RAGPipeline
 # ============== Sample Documentation ==============
 
 VEHICLE_SPECS = """
-# Especificações Técnicas - Modelo GenAuto X1 2024
+# Technical Specifications - GenAuto X1 2024
 
-## Motor
-- **Tipo**: 1.0 TSI Turbo Flex
-- **Potência**: 128 cv (gasolina) / 116 cv (etanol)
+## Engine
+- **Type**: 1.0 TSI Turbo Flex
+- **Power**: 128 hp (gasoline) / 116 hp (ethanol)
 - **Torque**: 200 Nm
-- **Cilindrada**: 999 cm³
-- **Alimentação**: Injeção direta de combustível
-- **Combustível**: Flex (gasolina/etanol)
+- **Displacement**: 999 cc
+- **Fuel System**: Direct fuel injection
+- **Fuel**: Flex (gasoline/ethanol)
 
-## Transmissão
-- **Tipo**: Automática de 6 velocidades
-- **Tração**: Dianteira
-- **Modos de condução**: Normal, Sport, Eco
+## Transmission
+- **Type**: 6-speed automatic
+- **Drive**: Front-wheel drive
+- **Driving Modes**: Normal, Sport, Eco
 
-## Dimensões
-- **Comprimento**: 4.199 mm
-- **Largura**: 1.760 mm
-- **Altura**: 1.568 mm
-- **Entre-eixos**: 2.651 mm
-- **Porta-malas**: 373 litros (420L com banco rebatido)
+## Dimensions
+- **Length**: 4,199 mm (165.3 in)
+- **Width**: 1,760 mm (69.3 in)
+- **Height**: 1,568 mm (61.7 in)
+- **Wheelbase**: 2,651 mm (104.4 in)
+- **Cargo Capacity**: 373 liters (420L with rear seats folded)
 
-## Peso e Capacidades
-- **Peso em ordem de marcha**: 1.239 kg
-- **Capacidade do tanque**: 50 litros
-- **Capacidade de reboque**: 750 kg (freado)
+## Weight and Capacities
+- **Curb Weight**: 1,239 kg (2,731 lbs)
+- **Fuel Tank Capacity**: 50 liters (13.2 gal)
+- **Towing Capacity**: 750 kg (1,653 lbs) braked
 
-## Consumo (INMETRO)
-- **Cidade (gasolina)**: 12,4 km/l
-- **Estrada (gasolina)**: 14,2 km/l
-- **Cidade (etanol)**: 8,6 km/l
-- **Estrada (etanol)**: 10,1 km/l
+## Fuel Economy (EPA Equivalent)
+- **City (gasoline)**: 29 mpg
+- **Highway (gasoline)**: 34 mpg
+- **City (ethanol)**: 20 mpg
+- **Highway (ethanol)**: 24 mpg
 
-## Pneus e Rodas
-- **Medida dos pneus**: 205/60 R16
-- **Rodas**: Liga leve 16"
-- **Estepe**: Temporário (uso emergencial até 80 km/h)
+## Tires and Wheels
+- **Tire Size**: 205/60 R16
+- **Wheels**: 16" alloy
+- **Spare**: Temporary (emergency use only, max 50 mph)
 """
 
 MAINTENANCE_GUIDE = """
-# Guia de Manutenção - GenAuto X1
+# Maintenance Guide - GenAuto X1
 
-## Revisões Programadas
+## Scheduled Maintenance
 
-### Revisão de 10.000 km ou 12 meses
-- Troca de óleo do motor
-- Substituição do filtro de óleo
-- Verificação do filtro de ar
-- Inspeção dos freios
-- Verificação dos níveis de fluidos
-- **Custo estimado**: R$ 450,00
+### 10,000 km (6,000 mi) or 12 months Service
+- Engine oil change
+- Oil filter replacement
+- Air filter inspection
+- Brake inspection
+- Fluid level check
+- **Estimated Cost**: $150
 
-### Revisão de 20.000 km ou 24 meses
-- Todos os itens da revisão de 10.000 km
-- Troca do filtro de ar do motor
-- Troca do filtro de ar condicionado
-- Verificação das correias
-- Alinhamento e balanceamento
-- **Custo estimado**: R$ 650,00
+### 20,000 km (12,000 mi) or 24 months Service
+- All items from 10,000 km service
+- Engine air filter replacement
+- Cabin air filter replacement
+- Belt inspection
+- Wheel alignment and balancing
+- **Estimated Cost**: $220
 
-### Revisão de 40.000 km ou 48 meses
-- Todos os itens anteriores
-- Troca das velas de ignição
-- Troca do fluido de freio
-- Inspeção da suspensão
-- **Custo estimado**: R$ 950,00
+### 40,000 km (24,000 mi) or 48 months Service
+- All previous items
+- Spark plug replacement
+- Brake fluid replacement
+- Suspension inspection
+- **Estimated Cost**: $320
 
-### Revisão de 60.000 km
-- Todos os itens anteriores
-- Troca da correia do alternador
-- Verificação do sistema de arrefecimento
-- Inspeção do escapamento
-- **Custo estimado**: R$ 1.200,00
+### 60,000 km (36,000 mi) Service
+- All previous items
+- Alternator belt replacement
+- Cooling system inspection
+- Exhaust system inspection
+- **Estimated Cost**: $400
 
-## Intervalos de Troca
+## Replacement Intervals
 
-| Item | Intervalo |
-|------|-----------|
-| Óleo do motor | 10.000 km ou 12 meses |
-| Filtro de óleo | 10.000 km ou 12 meses |
-| Filtro de ar | 20.000 km ou 24 meses |
-| Filtro de combustível | 40.000 km |
-| Velas de ignição | 40.000 km |
-| Fluido de freio | 40.000 km ou 24 meses |
-| Fluido de arrefecimento | 60.000 km ou 48 meses |
-| Correia dentada | 100.000 km |
+| Item | Interval |
+|------|----------|
+| Engine oil | 10,000 km or 12 months |
+| Oil filter | 10,000 km or 12 months |
+| Air filter | 20,000 km or 24 months |
+| Fuel filter | 40,000 km |
+| Spark plugs | 40,000 km |
+| Brake fluid | 40,000 km or 24 months |
+| Coolant | 60,000 km or 48 months |
+| Timing belt | 100,000 km |
 
-## Óleo Recomendado
-- **Especificação**: SAE 5W-30 API SN
-- **Capacidade com filtro**: 4,2 litros
-- **Marcas homologadas**: Castrol, Mobil, Shell, Petronas
+## Recommended Oil
+- **Specification**: SAE 5W-30 API SN
+- **Capacity with filter**: 4.2 liters (4.4 qt)
+- **Approved Brands**: Castrol, Mobil, Shell, Petronas
 """
 
 TROUBLESHOOTING_GUIDE = """
-# Guia de Diagnóstico - Problemas Comuns
+# Troubleshooting Guide - Common Problems
 
-## Luz de Check Engine Acesa
+## Check Engine Light On
 
-### Causas Comuns
-1. **Tampa do tanque solta**
-   - Sintoma: Luz acende após abastecer
-   - Solução: Verificar e apertar a tampa do tanque
-   - Gravidade: Baixa
+### Common Causes
+1. **Loose Gas Cap**
+   - Symptom: Light comes on after refueling
+   - Solution: Check and tighten gas cap
+   - Severity: Low
 
-2. **Sensor de oxigênio (sonda lambda)**
-   - Sintoma: Aumento no consumo, marcha lenta irregular
-   - Solução: Substituição do sensor
-   - Custo médio: R$ 300-500
-   - Gravidade: Média
+2. **Oxygen Sensor (Lambda Sensor)**
+   - Symptom: Increased fuel consumption, rough idle
+   - Solution: Sensor replacement
+   - Average Cost: $100-170
+   - Severity: Medium
 
-3. **Catalisador**
-   - Sintoma: Perda de potência, cheiro de enxofre
-   - Solução: Verificação e possível substituição
-   - Gravidade: Alta (procure assistência imediatamente)
+3. **Catalytic Converter**
+   - Symptom: Power loss, sulfur smell
+   - Solution: Inspection and possible replacement
+   - Severity: High (seek service immediately)
 
-4. **Bobina de ignição**
-   - Sintoma: Motor falhando, perda de potência
-   - Solução: Diagnóstico e troca da bobina defeituosa
-   - Gravidade: Média
+4. **Ignition Coil**
+   - Symptom: Engine misfires, power loss
+   - Solution: Diagnosis and replacement of faulty coil
+   - Severity: Medium
 
-## Problemas de Freio
+## Brake Issues
 
-### Freio Fazendo Barulho
-- **Chiado ao frear**: Pastilhas possivelmente gastas
-  - Verificar espessura das pastilhas (mínimo 3mm)
-  - Substituir se necessário
+### Brake Making Noise
+- **Squealing when braking**: Brake pads may be worn
+  - Check pad thickness (minimum 3mm)
+  - Replace if necessary
   
-- **Ruído metálico**: Disco pode estar empenado ou gasto
-  - Verificar espessura do disco
-  - Retificar ou substituir
+- **Metallic grinding**: Rotor may be warped or worn
+  - Check rotor thickness
+  - Resurface or replace
 
-### Pedal de Freio Mole
-- Verificar nível do fluido de freio
-- Possível ar no sistema (necessário sangria)
-- Verificar cilindro mestre
-- **ATENÇÃO**: Não dirija com freio comprometido!
+### Soft Brake Pedal
+- Check brake fluid level
+- Possible air in system (bleeding required)
+- Check master cylinder
+- **WARNING**: Do not drive with compromised brakes!
 
-## Superaquecimento do Motor
+## Engine Overheating
 
-### Ações Imediatas
-1. Ligue o ar quente no máximo (ajuda a dissipar calor)
-2. Desligue o ar condicionado
-3. Pare em local seguro
-4. NUNCA abra o reservatório com motor quente
-5. Aguarde esfriar (mínimo 30 minutos)
+### Immediate Actions
+1. Turn heater to maximum (helps dissipate heat)
+2. Turn off air conditioning
+3. Pull over safely
+4. NEVER open reservoir while engine is hot
+5. Wait to cool down (minimum 30 minutes)
 
-### Causas Comuns
-- Nível baixo de fluido de arrefecimento
-- Vazamento no sistema
-- Termostato travado
-- Ventoinha não funcionando
-- Bomba d'água defeituosa
+### Common Causes
+- Low coolant level
+- System leak
+- Stuck thermostat
+- Failed cooling fan
+- Faulty water pump
 
-## Bateria Descarregada
+## Dead Battery
 
-### Como dar partida com chupeta
-1. Conecte o cabo vermelho (+) na bateria boa
-2. Conecte a outra ponta do vermelho (+) na bateria descarregada
-3. Conecte o cabo preto (-) na bateria boa
-4. Conecte a outra ponta do preto em um ponto de metal do motor (terra)
-5. Dê partida no carro com bateria boa
-6. Aguarde 2-3 minutos
-7. Tente dar partida no carro com bateria fraca
-8. Remova os cabos na ordem inversa
+### How to Jump Start
+1. Connect red (+) cable to good battery
+2. Connect other end of red (+) to dead battery
+3. Connect black (-) cable to good battery
+4. Connect other end of black to engine ground (metal surface)
+5. Start car with good battery
+6. Wait 2-3 minutes
+7. Try starting car with dead battery
+8. Remove cables in reverse order
 
-### Sinais de Bateria Fraca
-- Partida lenta
-- Luzes fracas
-- Sistema elétrico falhando
-- Bateria com mais de 3 anos
+### Signs of Weak Battery
+- Slow cranking
+- Dim lights
+- Electrical system failures
+- Battery over 3 years old
 """
 
 FEATURES_GUIDE = """
-# Manual de Recursos - GenAuto X1 2024
+# Features Guide - GenAuto X1 2024
 
-## Sistema Multimídia GenConnect 10"
+## GenConnect 10" Infotainment System
 
-### Conectividade
-- **Android Auto**: Conecte seu celular Android via cabo USB
-- **Apple CarPlay**: Conecte seu iPhone via cabo USB
-- **Bluetooth**: Pareie até 8 dispositivos
-- **Wi-Fi**: Hotspot integrado (requer plano de dados)
+### Connectivity
+- **Android Auto**: Connect your Android phone via USB cable
+- **Apple CarPlay**: Connect your iPhone via USB cable
+- **Bluetooth**: Pair up to 8 devices
+- **Wi-Fi**: Integrated hotspot (requires data plan)
 
-### Espelhamento de Tela
-1. Conecte o cabo USB na porta do console central
-2. Autorize a conexão no celular
-3. O espelhamento iniciará automaticamente
+### Screen Mirroring
+1. Connect USB cable to center console port
+2. Authorize connection on phone
+3. Mirroring will start automatically
 
-### Comandos de Voz
-Ative dizendo "Ok GenAuto" ou pressionando o botão no volante:
-- "Ligar para [contato]"
-- "Navegar para [endereço]"
-- "Tocar [música/artista]"
-- "Temperatura [graus]"
+### Voice Commands
+Activate by saying "Ok GenAuto" or pressing the steering wheel button:
+- "Call [contact]"
+- "Navigate to [address]"
+- "Play [music/artist]"
+- "Set temperature to [degrees]"
 
-## Piloto Automático Adaptativo (ACC)
+## Adaptive Cruise Control (ACC)
 
-### Ativação
-1. Acelere até a velocidade desejada (mínimo 30 km/h)
-2. Pressione o botão SET no volante
-3. Ajuste a distância do veículo à frente (3 níveis)
-4. Para desativar: pressione o freio ou o botão OFF
+### Activation
+1. Accelerate to desired speed (minimum 20 mph)
+2. Press SET button on steering wheel
+3. Adjust following distance (3 levels)
+4. To deactivate: press brake or OFF button
 
-### Limitações
-- Não funciona abaixo de 30 km/h
-- Curvas acentuadas podem desativar o sistema
-- Chuva forte pode interferir nos sensores
-- Sempre mantenha as mãos no volante
+### Limitations
+- Does not work below 20 mph
+- Sharp curves may deactivate system
+- Heavy rain may interfere with sensors
+- Always keep hands on steering wheel
 
-## Assistente de Estacionamento
+## Parking Assistant
 
-### Como Usar
-1. Acione a seta para o lado da vaga
-2. Passe pela vaga em velocidade baixa (<20 km/h)
-3. Quando aparecer "P" no painel, pare o veículo
-4. Selecione a vaga detectada
-5. Solte o volante e controle apenas os pedais
-6. O sistema fará a manobra automaticamente
+### How to Use
+1. Activate turn signal toward parking space
+2. Drive past space at low speed (<12 mph)
+3. When "P" appears on dash, stop vehicle
+4. Select detected space
+5. Release steering wheel, control only pedals
+6. System will perform maneuver automatically
 
-### Tipos de Vaga Suportados
-- Paralela (baliza)
+### Supported Space Types
+- Parallel parking
 - Perpendicular (90°)
-- Diagonal (45°)
+- Angled (45°)
 
-## Sensores e Câmeras
+## Sensors and Cameras
 
-### Sensor de Estacionamento
-- 4 sensores dianteiros
-- 4 sensores traseiros
-- Alerta sonoro progressivo
-- Visualização gráfica no multimídia
+### Parking Sensors
+- 4 front sensors
+- 4 rear sensors
+- Progressive audio alert
+- Graphic display on infotainment
 
-### Câmera de Ré
-- Resolução HD
-- Linhas de guia dinâmicas
-- Sensor de movimento
-- Ativa automaticamente ao engatar a ré
+### Rear Camera
+- HD resolution
+- Dynamic guide lines
+- Motion sensor
+- Activates automatically in reverse
 
-### Câmera 360°
-- Visão superior do veículo
-- 4 câmeras sincronizadas
-- Útil para manobras em espaços apertados
+### 360° Camera
+- Top-down vehicle view
+- 4 synchronized cameras
+- Useful for tight space maneuvers
 """
 
 FAQ_CONTENT = """
-# Perguntas Frequentes - GenAuto X1
+# Frequently Asked Questions - GenAuto X1
 
-## Garantia
+## Warranty
 
-**P: Qual o prazo de garantia do veículo?**
-R: O GenAuto X1 possui garantia de 3 anos ou 100.000 km (o que ocorrer primeiro), válida para defeitos de fabricação.
+**Q: What is the vehicle warranty period?**
+A: The GenAuto X1 has a 3-year or 60,000-mile warranty (whichever comes first), valid for manufacturing defects.
 
-**P: A garantia cobre desgaste natural?**
-R: Não. Itens de desgaste como pastilhas de freio, pneus, palhetas e embreagem não são cobertos pela garantia.
+**Q: Does the warranty cover normal wear?**
+A: No. Wear items such as brake pads, tires, wiper blades, and clutch are not covered by warranty.
 
-**P: Posso fazer manutenção fora da concessionária sem perder a garantia?**
-R: Sim, desde que utilize peças genuínas e siga o plano de manutenção do manual. Guarde todas as notas fiscais.
+**Q: Can I service outside the dealership without voiding warranty?**
+A: Yes, as long as you use genuine parts and follow the maintenance schedule in the manual. Keep all receipts.
 
-## Combustível
+## Fuel
 
-**P: Posso usar gasolina aditivada?**
-R: Sim, gasolina aditivada pode ser usada e ajuda a manter o sistema de injeção limpo.
+**Q: Can I use premium gasoline?**
+A: Yes, premium gasoline can be used and helps keep the injection system clean.
 
-**P: Qual a diferença de desempenho entre gasolina e etanol?**
-R: Com etanol, a potência é ligeiramente menor (116cv vs 128cv), mas o torque é similar. O consumo com etanol é aproximadamente 30% maior.
+**Q: What's the performance difference between gasoline and ethanol?**
+A: With ethanol, power is slightly lower (116hp vs 128hp), but torque is similar. Fuel consumption with ethanol is approximately 30% higher.
 
-**P: O que acontece se eu misturar gasolina e etanol?**
-R: Não há problema. O sistema flex se adapta automaticamente a qualquer proporção de mistura.
+**Q: What happens if I mix gasoline and ethanol?**
+A: No problem. The flex system automatically adapts to any mixture ratio.
 
-## Pneus
+## Tires
 
-**P: Qual a pressão correta dos pneus?**
-R: Dianteiros: 32 psi / Traseiros: 32 psi (com carga normal). Para carga máxima: 35 psi.
+**Q: What is the correct tire pressure?**
+A: Front: 32 psi / Rear: 32 psi (normal load). For maximum load: 35 psi.
 
-**P: Posso usar pneus de medidas diferentes?**
-R: Não é recomendado. Use sempre a medida original (205/60 R16) para manter a segurança e não invalidar a garantia.
+**Q: Can I use different size tires?**
+A: Not recommended. Always use the original size (205/60 R16) to maintain safety and not void warranty.
 
-**P: O estepe é de uso temporário?**
-R: Sim. O estepe temporário deve ser usado apenas em emergências, com velocidade máxima de 80 km/h e distância máxima de 80 km.
+**Q: Is the spare tire for temporary use?**
+A: Yes. The temporary spare should only be used in emergencies, with maximum speed of 50 mph and maximum distance of 50 miles.
 
-## Tecnologia
+## Technology
 
-**P: Como atualizo o sistema multimídia?**
-R: Atualizações são feitas automaticamente via Wi-Fi ou na concessionária durante as revisões.
+**Q: How do I update the infotainment system?**
+A: Updates are done automatically via Wi-Fi or at the dealership during services.
 
-**P: O carro tem rastreador?**
-R: Sim, o GenAuto X1 possui rastreador integrado. Ative o serviço pelo app GenAuto Connect.
+**Q: Does the car have a tracker?**
+A: Yes, the GenAuto X1 has an integrated tracker. Activate the service through the GenAuto Connect app.
 
-**P: Como funciona a chave presencial?**
-R: Com a chave no bolso, aproxime-se do veículo para destravar automaticamente. Para dar partida, basta pressionar o botão Start/Stop com o pé no freio.
+**Q: How does the proximity key work?**
+A: With the key in your pocket, approach the vehicle to unlock automatically. To start, press the Start/Stop button with foot on brake.
 
-## Manutenção
+## Maintenance
 
-**P: Com que frequência devo trocar o óleo?**
-R: A cada 10.000 km ou 12 meses, o que ocorrer primeiro.
+**Q: How often should I change the oil?**
+A: Every 10,000 km (6,000 mi) or 12 months, whichever comes first.
 
-**P: Qual óleo devo usar?**
-R: SAE 5W-30 com especificação API SN ou superior.
+**Q: What oil should I use?**
+A: SAE 5W-30 with API SN specification or higher.
 
-**P: A correia dentada precisa ser trocada?**
-R: Sim, a cada 100.000 km ou conforme indicação do computador de bordo.
+**Q: Does the timing belt need replacement?**
+A: Yes, every 100,000 km (60,000 mi) or as indicated by the onboard computer.
 """
 
 SAFETY_GUIDE = """
-# Manual de Segurança - GenAuto X1
+# Safety Manual - GenAuto X1
 
-## Equipamentos de Segurança
+## Safety Equipment
 
 ### Airbags
-O veículo possui 6 airbags:
-- 2 frontais (motorista e passageiro)
-- 2 laterais (motorista e passageiro)
-- 2 de cortina (proteção de cabeça)
+The vehicle has 6 airbags:
+- 2 frontal (driver and passenger)
+- 2 side (driver and passenger)
+- 2 curtain (head protection)
 
-**ATENÇÃO**: 
-- Nunca instale cadeirinha infantil no banco dianteiro
-- Crianças menores de 10 anos devem viajar no banco traseiro
-- Não coloque objetos sobre o painel ou airbags
+**WARNING**: 
+- Never install child seat in front passenger seat
+- Children under 12 should ride in rear seat
+- Do not place objects on dashboard or airbags
 
-### Cintos de Segurança
-- Todos os cintos são de 3 pontos com retrator
-- Cintos dianteiros possuem pré-tensionador
-- Alerta sonoro e visual para cintos desafivelados
+### Seat Belts
+- All belts are 3-point with retractor
+- Front belts have pretensioners
+- Audio and visual alert for unfastened belts
 
-### Sistemas de Assistência (ADAS)
+### Driver Assistance Systems (ADAS)
 
-**Frenagem Automática de Emergência (AEB)**
-- Detecta obstáculos e pedestres
-- Alerta o motorista
-- Freia automaticamente se não houver reação
-- Funciona entre 5-80 km/h
+**Automatic Emergency Braking (AEB)**
+- Detects obstacles and pedestrians
+- Alerts driver
+- Brakes automatically if no reaction
+- Works between 3-50 mph
 
-**Alerta de Colisão Frontal (FCW)**
-- Monitora veículos à frente
-- Alerta visual e sonoro
-- Prepara o sistema de freios
+**Forward Collision Warning (FCW)**
+- Monitors vehicles ahead
+- Visual and audio alert
+- Prepares braking system
 
-**Assistente de Permanência em Faixa (LKA)**
-- Detecta marcações na pista
-- Alerta se sair da faixa sem sinalizar
-- Pode corrigir levemente a direção
+**Lane Keep Assist (LKA)**
+- Detects lane markings
+- Alerts if leaving lane without signaling
+- Can gently correct steering
 
-**Monitoramento de Ponto Cego (BSM)**
-- Sensores nos retrovisores laterais
-- Alerta visual quando há veículo no ponto cego
-- Especialmente útil em mudanças de faixa
+**Blind Spot Monitoring (BSM)**
+- Sensors in side mirrors
+- Visual alert when vehicle in blind spot
+- Especially useful for lane changes
 
-## Cadeirinha Infantil
+## Child Safety Seats
 
-### Fixação ISOFIX
-O veículo possui pontos de ancoragem ISOFIX nos bancos traseiros laterais:
-- 2 pontos de ancoragem inferior
-- 1 ponto Top Tether (parte superior)
+### ISOFIX Mounting
+The vehicle has ISOFIX anchor points on outer rear seats:
+- 2 lower anchor points
+- 1 Top Tether point (upper)
 
-### Recomendação por Idade
-- Até 1 ano: Bebê conforto voltado para trás
-- 1-4 anos: Cadeirinha voltada para frente
-- 4-7,5 anos: Assento de elevação com encosto
-- 7,5-10 anos: Assento de elevação (booster)
+### Recommendation by Age
+- Under 1 year: Rear-facing infant seat
+- 1-4 years: Forward-facing child seat
+- 4-8 years: Booster seat with back
+- 8-12 years: Booster seat (backless)
 
-## Em Caso de Acidente
+## In Case of Accident
 
-### Procedimentos
-1. Mantenha a calma
-2. Ligue o pisca-alerta
-3. Sinalize a via (triângulo a 30m do veículo)
-4. Verifique se há feridos
-5. Chame socorro: SAMU 192 / Bombeiros 193
-6. Não mova feridos (exceto risco de incêndio)
-7. Registre boletim de ocorrência
+### Procedures
+1. Stay calm
+2. Turn on hazard lights
+3. Set up warning triangle (100 ft from vehicle)
+4. Check for injuries
+5. Call emergency services: 911
+6. Do not move injured persons (except fire risk)
+7. File police report
 
-### Contatos de Emergência
-- Assistência 24h GenAuto: 0800 XXX XXXX
-- SAMU: 192
-- Bombeiros: 193
-- Polícia: 190
+### Emergency Contacts
+- GenAuto 24h Roadside Assistance: 1-800-XXX-XXXX
+- Emergency Services: 911
+- Police: 911
+- Fire Department: 911
 """
 
 
 DOCUMENTS = [
     {
         "text": VEHICLE_SPECS,
-        "source": "especificacoes_genautox1_2024.md",
+        "source": "specs_genautox1_2024.md",
         "document_type": "spec",
     },
     {
         "text": MAINTENANCE_GUIDE,
-        "source": "guia_manutencao_genautox1.md",
+        "source": "maintenance_guide_genautox1.md",
         "document_type": "manual",
     },
     {
         "text": TROUBLESHOOTING_GUIDE,
-        "source": "guia_diagnostico_problemas.md",
+        "source": "troubleshooting_guide.md",
         "document_type": "troubleshoot",
     },
     {
         "text": FEATURES_GUIDE,
-        "source": "manual_recursos_genautox1.md",
+        "source": "features_guide_genautox1.md",
         "document_type": "guide",
     },
     {
@@ -420,7 +420,7 @@ DOCUMENTS = [
     },
     {
         "text": SAFETY_GUIDE,
-        "source": "manual_seguranca_genautox1.md",
+        "source": "safety_manual_genautox1.md",
         "document_type": "manual",
     },
 ]
