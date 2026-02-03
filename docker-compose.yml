@@ -20,6 +20,60 @@ services:
       timeout: 5s
       retries: 5
 
+  # Keycloak Database
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: genai-auto-keycloak-db
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_secret}
+      POSTGRES_DB: keycloak
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak (Authentication - replaces Entra ID)
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: genai-auto-keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_secret}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: true
+    ports:
+      - "8080:8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Redis (Caching for performance)
+  redis:
+    image: redis:7-alpine
+    container_name: genai-auto-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # FastAPI Application
   api:
     build:
@@ -28,10 +82,23 @@ services:
     container_name: genai-auto-api
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-genai}:${POSTGRES_PASSWORD:-genai_secret}@postgres:5432/${POSTGRES_DB:-genai_auto}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      - LLM_MODEL=${LLM_MODEL:-meta-llama/llama-3.1-8b-instruct:free}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-nomic-ai/nomic-embed-text-v1.5}
       - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      # Keycloak Auth
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-genai-auto}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-genai-api}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-}
+      # Redis Cache
+      - REDIS_URL=redis://redis:6379
+      # Human Handoff
+      - CONFIDENCE_THRESHOLD=${CONFIDENCE_THRESHOLD:-0.7}
+      - HUMAN_SUPPORT_WEBHOOK=${HUMAN_SUPPORT_WEBHOOK:-}
     ports:
       - "8000:8000"
     volumes:
@@ -39,6 +106,10 @@ services:
       - ./data:/app/data
     depends_on:
       postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
@@ -58,6 +129,8 @@ services:
 
 volumes:
   postgres_data:
+  keycloak_data:
+  redis_data:
 
 networks:
   default:

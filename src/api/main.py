@@ -6,7 +6,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.config import get_settings
-from src.api.routes import chat, health, documents
+from src.api.routes import chat, health, documents, metrics as metrics_routes
+from src.api.observability import RequestTracingMiddleware
+from src.api.cache import close_redis
 from src.storage.database import init_db
 
 # Configure structured logging
@@ -30,10 +32,16 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
-    logger.info("Starting GenAI Auto API", version="1.0.0")
+    logger.info(
+        "Starting GenAI Auto API",
+        version="1.0.0",
+        llm_model=settings.llm_model,
+        cache_enabled=settings.cache_enabled,
+    )
     await init_db()
     yield
     logger.info("Shutting down GenAI Auto API")
+    await close_redis()
 
 
 app = FastAPI(
@@ -42,6 +50,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Request tracing middleware (must be first)
+app.add_middleware(RequestTracingMiddleware)
 
 # CORS middleware
 app.add_middleware(
@@ -56,6 +67,7 @@ app.add_middleware(
 app.include_router(health.router, tags=["Health"])
 app.include_router(chat.router, prefix="/api/v1", tags=["Chat"])
 app.include_router(documents.router, prefix="/api/v1", tags=["Documents"])
+app.include_router(metrics_routes.router, prefix="/api/v1", tags=["Metrics"])
 
 
 @app.get("/")
@@ -66,4 +78,10 @@ async def root():
         "version": "1.0.0",
         "description": "Multi-agent AI system for automotive customer service",
         "docs": "/docs",
+        "features": {
+            "authentication": "Keycloak (OIDC)",
+            "caching": settings.cache_enabled,
+            "pii_protection": settings.mask_pii,
+            "human_handoff": bool(settings.human_support_webhook),
+        },
     }

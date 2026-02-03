@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     embedding_model: str = "nomic-ai/nomic-embed-text-v1.5"  # Free on OpenRouter
     embedding_dimension: int = 768  # Nomic embed dimension
 
-    # LangChain
+    # LangChain Observability
     langchain_tracing_v2: bool = False
     langchain_api_key: str = ""
 
@@ -29,12 +29,30 @@ class Settings(BaseSettings):
     api_port: int = 8000
     debug: bool = False
 
+    # Keycloak Authentication (replaces Entra ID)
+    keycloak_url: str = "http://localhost:8080"
+    keycloak_realm: str = "genai-auto"
+    keycloak_client_id: str = "genai-api"
+    keycloak_client_secret: str = ""
+
+    # Redis Cache (Performance)
+    redis_url: str = "redis://localhost:6379"
+    cache_ttl: int = 3600  # 1 hour default
+    cache_enabled: bool = True
+
+    # Human Handoff
+    confidence_threshold: float = 0.7  # Below this, escalate to human
+    human_support_webhook: str = ""  # Webhook to notify human support
+
     # Scheduler API
     scheduler_api_url: str = "http://localhost:9000"
     scheduler_api_key: str = ""
 
     # Vector search
     similarity_top_k: int = 5
+
+    # PII Protection
+    mask_pii: bool = True  # Mask sensitive data in logs
 
     class Config:
         env_file = ".env"

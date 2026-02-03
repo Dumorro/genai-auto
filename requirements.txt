@@ -18,6 +18,12 @@ pgvector>=0.3.6
 asyncpg>=0.30.0
 alembic>=1.14.0
 
+# Authentication (Keycloak)
+python-jose[cryptography]>=3.3.0
+
+# Caching (Redis)
+redis>=5.2.0
+
 # Vector Store & Embeddings (OpenRouter compatible)
 openai>=1.55.0
 tiktoken>=0.8.0
