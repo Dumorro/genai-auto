@@ -7,7 +7,7 @@ import structlog
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import tool
-from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from src.api.config import get_settings
@@ -138,10 +138,16 @@ class MaintenanceAgent:
     """
 
     def __init__(self):
+        # Use OpenRouter for LLM
         self.llm = ChatOpenAI(
-            model=settings.openai_model,
-            api_key=settings.openai_api_key,
+            model=settings.llm_model,
+            api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
             temperature=0.1,
+            default_headers={
+                "HTTP-Referer": "https://github.com/genai-auto",
+                "X-Title": "GenAI Auto - Maintenance Agent",
+            },
         )
 
         self.tools = [
@@ -176,7 +182,7 @@ Current date: {current_date}"""
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
 
-        self.agent = create_openai_tools_agent(self.llm, self.tools, self.prompt)
+        self.agent = create_tool_calling_agent(self.llm, self.tools, self.prompt)
         self.agent_executor = AgentExecutor(
             agent=self.agent,
             tools=self.tools,

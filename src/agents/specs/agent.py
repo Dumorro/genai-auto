@@ -27,14 +27,22 @@ class SpecsAgent:
     """
 
     def __init__(self):
+        # Use OpenRouter for LLM
         self.llm = ChatOpenAI(
-            model=settings.openai_model,
-            api_key=settings.openai_api_key,
+            model=settings.llm_model,
+            api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
             temperature=0.1,
+            default_headers={
+                "HTTP-Referer": "https://github.com/genai-auto",
+                "X-Title": "GenAI Auto - Specs Agent",
+            },
         )
+        # Use OpenRouter for embeddings
         self.embeddings = OpenAIEmbeddings(
-            model=settings.openai_embedding_model,
-            api_key=settings.openai_api_key,
+            model=settings.embedding_model,
+            api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
         )
 
         self.system_prompt = """You are a knowledgeable automotive technical specialist assistant.

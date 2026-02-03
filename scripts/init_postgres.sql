@@ -51,11 +51,12 @@ CREATE TABLE IF NOT EXISTS appointments (
 );
 
 -- Document embeddings table (for RAG)
+-- Using 768 dimensions for nomic-embed-text-v1.5 (OpenRouter free model)
 CREATE TABLE IF NOT EXISTS document_embeddings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     content TEXT NOT NULL,
     metadata JSONB,
-    embedding vector(1536),
+    embedding vector(768),
     source VARCHAR(255),
     document_type VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

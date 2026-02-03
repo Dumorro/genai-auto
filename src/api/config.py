@@ -10,10 +10,14 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql://genai:genai_secret@localhost:5432/genai_auto"
 
-    # OpenAI
-    openai_api_key: str = ""
-    openai_model: str = "gpt-4-turbo-preview"
-    openai_embedding_model: str = "text-embedding-3-small"
+    # LLM Provider (OpenRouter)
+    openrouter_api_key: str = ""
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    llm_model: str = "meta-llama/llama-3.1-8b-instruct:free"  # Free model
+    
+    # Embeddings (using free local model or OpenRouter)
+    embedding_model: str = "nomic-ai/nomic-embed-text-v1.5"  # Free on OpenRouter
+    embedding_dimension: int = 768  # Nomic embed dimension
 
     # LangChain
     langchain_tracing_v2: bool = False
@@ -30,7 +34,6 @@ class Settings(BaseSettings):
     scheduler_api_key: str = ""
 
     # Vector search
-    vector_dimension: int = 1536
     similarity_top_k: int = 5
 
     class Config:

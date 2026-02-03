@@ -1,44 +1,44 @@
 # Core Framework
-langchain>=0.1.0
-langgraph>=0.0.20
-langchain-openai>=0.0.5
-langchain-community>=0.0.20
+langchain>=0.3.0
+langgraph>=0.2.0
+langchain-openai>=0.2.0  # Works with OpenRouter via base_url
+langchain-community>=0.3.0
 
 # API
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-pydantic>=2.5.0
-pydantic-settings>=2.1.0
-python-multipart>=0.0.6
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+python-multipart>=0.0.12
 
 # Database
-sqlalchemy>=2.0.25
-psycopg2-binary>=2.9.9
-pgvector>=0.2.4
-asyncpg>=0.29.0
-alembic>=1.13.1
+sqlalchemy>=2.0.36
+psycopg2-binary>=2.9.10
+pgvector>=0.3.6
+asyncpg>=0.30.0
+alembic>=1.14.0
 
-# Vector Store & Embeddings
-openai>=1.10.0
-tiktoken>=0.5.2
+# Vector Store & Embeddings (OpenRouter compatible)
+openai>=1.55.0
+tiktoken>=0.8.0
 
 # Document Processing
-pypdf>=4.0.0
-python-docx>=1.1.0
-unstructured>=0.12.0
+pypdf>=5.1.0
+python-docx>=1.1.2
+unstructured>=0.16.0
 
 # Utilities
-python-dotenv>=1.0.0
-httpx>=0.26.0
-tenacity>=8.2.3
-structlog>=24.1.0
+python-dotenv>=1.0.1
+httpx>=0.28.0
+tenacity>=9.0.0
+structlog>=24.4.0
 
 # Testing
-pytest>=8.0.0
-pytest-asyncio>=0.23.0
-pytest-cov>=4.1.0
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
+pytest-cov>=6.0.0
 
 # Development
-black>=24.1.0
-ruff>=0.1.14
-mypy>=1.8.0
+black>=24.10.0
+ruff>=0.8.0
+mypy>=1.13.0

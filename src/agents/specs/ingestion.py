@@ -21,9 +21,11 @@ class DocumentIngestionPipeline:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+        # Use OpenRouter for embeddings
         self.embeddings = OpenAIEmbeddings(
-            model=settings.openai_embedding_model,
-            api_key=settings.openai_api_key,
+            model=settings.embedding_model,
+            api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,

@@ -130,10 +130,16 @@ class TroubleshootAgent:
     """
 
     def __init__(self):
+        # Use OpenRouter for LLM
         self.llm = ChatOpenAI(
-            model=settings.openai_model,
-            api_key=settings.openai_api_key,
+            model=settings.llm_model,
+            api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
             temperature=0.2,
+            default_headers={
+                "HTTP-Referer": "https://github.com/genai-auto",
+                "X-Title": "GenAI Auto - Troubleshoot Agent",
+            },
         )
 
         self.system_prompt = """You are an expert automotive diagnostic assistant.
