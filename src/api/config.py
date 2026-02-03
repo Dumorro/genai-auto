@@ -29,11 +29,11 @@ class Settings(BaseSettings):
     api_port: int = 8000
     debug: bool = False
 
-    # Keycloak Authentication (replaces Entra ID)
-    keycloak_url: str = "http://localhost:8080"
-    keycloak_realm: str = "genai-auto"
-    keycloak_client_id: str = "genai-api"
-    keycloak_client_secret: str = ""
+    # JWT Authentication (built-in, lightweight)
+    jwt_secret_key: str = "change-me-in-production-use-openssl-rand-hex-32"
+    jwt_algorithm: str = "HS256"
+    jwt_access_expire_minutes: int = 30
+    jwt_refresh_expire_days: int = 7
 
     # Redis Cache (Performance)
     redis_url: str = "redis://localhost:6379"

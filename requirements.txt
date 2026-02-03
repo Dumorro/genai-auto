@@ -18,8 +18,9 @@ pgvector>=0.3.6
 asyncpg>=0.30.0
 alembic>=1.14.0
 
-# Authentication (Keycloak)
+# Authentication (JWT built-in)
 python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
 
 # Caching (Redis)
 redis>=5.2.0

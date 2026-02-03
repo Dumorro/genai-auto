@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from src.api.auth import get_current_user, KeycloakUser, require_role
+from src.api.auth import get_current_user, AuthenticatedUser
 from src.api.observability import metrics
 from src.api.cache import token_tracker
 
@@ -25,18 +25,18 @@ async def get_metrics():
 
 @router.get("/metrics/detailed")
 async def get_detailed_metrics(
-    user: KeycloakUser = Depends(require_role("admin")),
+    user: AuthenticatedUser = Depends(get_current_user),
 ):
-    """Get detailed system metrics (admin only)."""
+    """Get detailed system metrics (authenticated users)."""
     return metrics.get_metrics()
 
 
 @router.get("/metrics/tokens")
 async def get_token_usage(
     date: str = None,
-    user: KeycloakUser = Depends(require_role("admin")),
+    user: AuthenticatedUser = Depends(get_current_user),
 ):
-    """Get token usage statistics (admin only)."""
+    """Get token usage statistics."""
     daily_usage = await token_tracker.get_daily_usage(date)
     return {
         "date": date or "today",
@@ -47,7 +47,7 @@ async def get_token_usage(
 @router.get("/metrics/tokens/session/{session_id}")
 async def get_session_token_usage(
     session_id: str,
-    user: KeycloakUser = Depends(get_current_user),
+    user: AuthenticatedUser = Depends(get_current_user),
 ):
     """Get token usage for a specific session."""
     usage = await token_tracker.get_session_usage(session_id)

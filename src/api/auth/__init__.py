@@ -1,10 +1,25 @@
-"""Authentication module using Keycloak."""
+"""Authentication module - Built-in JWT (lightweight, no external service)."""
 
-from src.api.auth.keycloak import (
+from src.api.auth.jwt_auth import (
     get_current_user,
     get_optional_user,
-    KeycloakUser,
-    verify_token,
+    AuthenticatedUser,
+    AuthService,
+    UserCreate,
+    UserLogin,
+    TokenResponse,
+    create_tokens,
+    decode_token,
 )
 
-__all__ = ["get_current_user", "get_optional_user", "KeycloakUser", "verify_token"]
+__all__ = [
+    "get_current_user",
+    "get_optional_user",
+    "AuthenticatedUser",
+    "AuthService",
+    "UserCreate",
+    "UserLogin",
+    "TokenResponse",
+    "create_tokens",
+    "decode_token",
+]
