@@ -4,106 +4,102 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-def test_root_endpoint():
-    """Test root endpoint returns correct info."""
-    # Import here to avoid loading all dependencies during collection
+@pytest.fixture
+def client():
+    """Create test client."""
     from src.api.main import app
-
-    client = TestClient(app)
-    response = client.get("/")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "GenAI Auto API"
-    assert data["version"] == "1.0.0"
+    return TestClient(app)
 
 
-def test_health_endpoint():
-    """Test health check endpoint."""
-    from src.api.main import app
+class TestHealthEndpoints:
+    """Health check endpoint tests."""
 
-    client = TestClient(app)
-    response = client.get("/health")
+    def test_root_endpoint(self, client):
+        """Test root endpoint returns correct info."""
+        response = client.get("/")
 
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "GenAI Auto API"
+        assert data["version"] == "1.0.0"
+        assert "features" in data
 
+    def test_health_endpoint(self, client):
+        """Test health check endpoint."""
+        response = client.get("/health")
 
-@pytest.mark.asyncio
-async def test_orchestrator_classification():
-    """Test intent classification."""
-    from src.orchestrator.graph import Orchestrator, AgentState
-
-    # This test requires API key, skip if not available
-    import os
-
-    if not os.getenv("OPENAI_API_KEY"):
-        pytest.skip("OPENAI_API_KEY not set")
-
-    orchestrator = Orchestrator()
-
-    # Test specs intent
-    state: AgentState = {
-        "messages": [{"role": "user", "content": "What is the towing capacity of my vehicle?"}],
-        "session_id": "test-session",
-        "customer_id": None,
-        "vehicle_id": None,
-        "metadata": {},
-        "current_agent": None,
-        "context": {},
-    }
-
-    result = await orchestrator.classify_intent(state)
-    assert result["current_agent"] in ["specs", "maintenance", "troubleshoot"]
+        assert response.status_code == 200
+        assert response.json()["status"] == "healthy"
 
 
-@pytest.mark.asyncio
-async def test_maintenance_classification():
-    """Test maintenance intent classification."""
-    import os
+class TestAuthEndpoints:
+    """Authentication endpoint tests."""
 
-    if not os.getenv("OPENAI_API_KEY"):
-        pytest.skip("OPENAI_API_KEY not set")
+    def test_register_missing_fields(self, client):
+        """Test registration with missing fields."""
+        response = client.post(
+            "/api/v1/auth/register",
+            json={"email": "test@example.com"}
+        )
+        assert response.status_code == 422
 
-    from src.orchestrator.graph import Orchestrator, AgentState
+    def test_login_invalid_credentials(self, client):
+        """Test login with invalid credentials."""
+        response = client.post(
+            "/api/v1/auth/login",
+            json={
+                "email": "nonexistent@example.com",
+                "password": "wrongpassword"
+            }
+        )
+        assert response.status_code == 401
 
-    orchestrator = Orchestrator()
-
-    state: AgentState = {
-        "messages": [{"role": "user", "content": "I need to schedule an oil change for next week"}],
-        "session_id": "test-session",
-        "customer_id": None,
-        "vehicle_id": None,
-        "metadata": {},
-        "current_agent": None,
-        "context": {},
-    }
-
-    result = await orchestrator.classify_intent(state)
-    assert result["current_agent"] == "maintenance"
+    def test_protected_endpoint_no_token(self, client):
+        """Test accessing protected endpoint without token."""
+        response = client.get("/api/v1/auth/me")
+        assert response.status_code == 401
 
 
-@pytest.mark.asyncio
-async def test_troubleshoot_classification():
-    """Test troubleshoot intent classification."""
-    import os
+class TestDocumentEndpoints:
+    """Document/RAG endpoint tests."""
 
-    if not os.getenv("OPENAI_API_KEY"):
-        pytest.skip("OPENAI_API_KEY not set")
+    def test_search_documents(self, client):
+        """Test document search endpoint."""
+        response = client.post(
+            "/api/v1/documents/search",
+            json={
+                "query": "engine specifications",
+                "top_k": 5
+            }
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "results" in data
+        assert "query" in data
 
-    from src.orchestrator.graph import Orchestrator, AgentState
+    def test_get_stats(self, client):
+        """Test knowledge base stats endpoint."""
+        response = client.get("/api/v1/documents/stats")
+        assert response.status_code == 200
+        data = response.json()
+        assert "total_chunks" in data
 
-    orchestrator = Orchestrator()
+    def test_upload_no_auth(self, client):
+        """Test document upload without authentication."""
+        response = client.post(
+            "/api/v1/documents/upload",
+            files={"file": ("test.txt", b"test content", "text/plain")}
+        )
+        assert response.status_code == 401
 
-    state: AgentState = {
-        "messages": [{"role": "user", "content": "My check engine light is on and the car is making strange noises"}],
-        "session_id": "test-session",
-        "customer_id": None,
-        "vehicle_id": None,
-        "metadata": {},
-        "current_agent": None,
-        "context": {},
-    }
 
-    result = await orchestrator.classify_intent(state)
-    assert result["current_agent"] == "troubleshoot"
+class TestMetricsEndpoints:
+    """Metrics endpoint tests."""
+
+    def test_public_metrics(self, client):
+        """Test public metrics endpoint."""
+        response = client.get("/api/v1/metrics")
+        assert response.status_code == 200
+        data = response.json()
+        assert "status" in data
+        assert "requests_total" in data

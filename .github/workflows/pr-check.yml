@@ -1,0 +1,72 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-check:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          # Check if commits follow conventional commits format
+          git log --oneline origin/${{ github.base_ref }}..HEAD | while read line; do
+            if ! echo "$line" | grep -qE "^[a-f0-9]+ (feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+"; then
+              echo "⚠️ Commit doesn't follow conventional commits: $line"
+            fi
+          done
+
+      - name: Check for large files
+        run: |
+          # Warn about files larger than 1MB
+          find . -type f -size +1M -not -path "./.git/*" | while read file; do
+            echo "⚠️ Large file detected: $file ($(du -h "$file" | cut -f1))"
+          done
+
+      - name: Check for secrets
+        run: |
+          # Basic check for potential secrets (not comprehensive)
+          if grep -rE "(api[_-]?key|secret|password|token)\s*=\s*['\"][^'\"]+['\"]" --include="*.py" --include="*.yml" --include="*.yaml" src/ .github/ 2>/dev/null | grep -v "example" | grep -v "test"; then
+            echo "⚠️ Potential hardcoded secrets detected!"
+            exit 1
+          fi
+          echo "✅ No obvious hardcoded secrets found"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install safety
+        run: pip install safety
+
+      - name: Check dependencies for vulnerabilities
+        run: |
+          safety check -r requirements.txt --output text || true
+
+  docker-lint:
+    name: Dockerfile Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
