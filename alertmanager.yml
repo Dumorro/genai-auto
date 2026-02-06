@@ -1,0 +1,128 @@
+global:
+  resolve_timeout: 5m
+  # Slack webhook (configure with your webhook URL)
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# Define notification templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing rules
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 4h
+  receiver: 'default'
+  
+  routes:
+    # Critical alerts go to multiple channels
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+    
+    # Warning alerts to Slack only
+    - match:
+        severity: warning
+      receiver: 'slack'
+    
+    # Cost alerts to dedicated channel
+    - match_re:
+        alertname: '.*Cost.*'
+      receiver: 'cost-alerts'
+    
+    # Performance alerts
+    - match_re:
+        alertname: '.*(Latency|Performance).*'
+      receiver: 'performance-alerts'
+
+# Receivers (notification channels)
+receivers:
+  # Default receiver (catches all)
+  - name: 'default'
+    slack_configs:
+      - channel: '#genai-alerts'
+        title: 'GenAI Auto Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+  
+  # Critical alerts (Slack + Email + PagerDuty)
+  - name: 'critical-alerts'
+    slack_configs:
+      - channel: '#genai-critical'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Severity:* {{ .Labels.severity }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+    
+    email_configs:
+      - to: 'oncall@example.com'
+        from: 'alertmanager@genai-auto.com'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: 'alertmanager@genai-auto.com'
+        auth_password: 'YOUR_EMAIL_PASSWORD'
+        headers:
+          Subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+    
+    pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+        description: '{{ .GroupLabels.alertname }}: {{ .Annotations.summary }}'
+  
+  # Slack only
+  - name: 'slack'
+    slack_configs:
+      - channel: '#genai-alerts'
+        title: '⚠️ Warning: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Summary:* {{ .Annotations.summary }}
+          {{ end }}
+        send_resolved: true
+  
+  # Cost alerts (dedicated channel)
+  - name: 'cost-alerts'
+    slack_configs:
+      - channel: '#genai-cost-alerts'
+        title: '💰 Cost Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+  
+  # Performance alerts
+  - name: 'performance-alerts'
+    slack_configs:
+      - channel: '#genai-performance'
+        title: '⚡ Performance Issue: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Summary:* {{ .Annotations.summary }}
+          *Current Value:* {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+
+# Inhibition rules (suppress alerts)
+inhibit_rules:
+  # If API is down, suppress all other alerts
+  - source_match:
+      alertname: 'APIDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+  
+  # If critical cost alert fires, suppress warning cost alert
+  - source_match:
+      alertname: 'CriticalLLMCost'
+    target_match:
+      alertname: 'HighLLMCost'
+    equal: ['instance']

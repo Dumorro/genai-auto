@@ -1,0 +1,52 @@
+{{ define "slack.default.title" }}
+{{ if eq .Status "firing" }}🔥{{ else }}✅{{ end }} {{ .GroupLabels.alertname }}
+{{ end }}
+
+{{ define "slack.default.text" }}
+{{- range .Alerts }}
+*Alert:* {{ .Labels.alertname }}
+*Severity:* {{ .Labels.severity }}
+*Status:* {{ .Status }}
+
+*Summary:* {{ .Annotations.summary }}
+*Description:* {{ .Annotations.description }}
+
+*Started:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+{{- if .EndsAt }}
+*Ended:* {{ .EndsAt.Format "2006-01-02 15:04:05" }}
+{{- end }}
+
+---
+{{- end }}
+{{ end }}
+
+{{ define "slack.cost.text" }}
+{{- range .Alerts }}
+💰 *Cost Alert: {{ .Labels.alertname }}*
+
+{{ .Annotations.summary }}
+{{ .Annotations.description }}
+
+*When:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+*Severity:* {{ .Labels.severity }}
+
+🔗 <http://localhost:3000/d/genai-auto|View Dashboard>
+---
+{{- end }}
+{{ end }}
+
+{{ define "slack.performance.text" }}
+{{- range .Alerts }}
+⚡ *Performance Issue: {{ .Labels.alertname }}*
+
+{{ .Annotations.summary }}
+Current: {{ .Annotations.description }}
+
+*When:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+*Endpoint:* {{ .Labels.endpoint }}
+*Agent:* {{ .Labels.agent }}
+
+🔗 <http://localhost:3000/d/genai-auto|View Dashboard>
+---
+{{- end }}
+{{ end }}
