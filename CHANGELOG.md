@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 📊 **Advanced Metrics System (Phase 2)** (2026-02-06)
+  - RAG similarity score tracking (retrieval quality)
+  - Cache hit rate monitoring (response & embedding caches)
+  - Human handoff tracking (escalation reasons & confidence)
+  - Task completion rate (completed/abandoned/escalated)
+  - Agent routing accuracy (routing confidence & rerouting)
+  - 10 new alert rules for advanced metrics
+  - Complete advanced metrics documentation (`docs/ADVANCED_METRICS.md`)
+  - Integration examples (`src/api/routes/advanced_metrics_example.py`)
+  - Helper functions for easy tracking
+
 - 📊 **Essential Metrics System** (2026-02-06)
   - Token usage tracking (input/output per agent/model)
   - Real-time cost calculation per request

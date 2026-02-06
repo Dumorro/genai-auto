@@ -272,17 +272,29 @@ curl -X DELETE http://localhost:8000/api/v1/documents/manual.pdf \
 - **Rate Limiting**: Abuse protection
 
 ### 📊 Metrics & Observability
-- **5 Essential Metrics** (Prometheus-ready):
+- **10 Production Metrics** (Prometheus-ready):
+  
+  **Essential (Phase 1):**
   - ✅ **Token Usage** (input/output per agent/model)
   - ✅ **Cost per Request** (real-time LLM cost tracking)
   - ✅ **Response Latency** (P50/P95/P99 distributions)
   - ✅ **Error Rate** (HTTP + LLM errors by type)
   - ✅ **User Feedback** (thumbs up/down tracking)
+  
+  **Advanced (Phase 2):**
+  - ✅ **RAG Similarity Score** (retrieval quality)
+  - ✅ **Cache Hit Rate** (performance optimization)
+  - ✅ **Handoff Rate** (human escalation tracking)
+  - ✅ **Task Completion Rate** (user success)
+  - ✅ **Agent Routing Accuracy** (orchestration quality)
+
 - **Prometheus Endpoint**: `/api/v1/metrics`
 - **Grafana Dashboards**: Pre-configured queries for visualization
+- **25+ Alerts**: Cost, latency, errors, satisfaction, quality
 - **Request Tracing**: X-Request-ID on all requests
 
-📖 **[Full Metrics Guide →](docs/METRICS.md)**
+📖 **[Essential Metrics Guide →](docs/METRICS.md)**  
+📖 **[Advanced Metrics Guide →](docs/ADVANCED_METRICS.md)**
 
 ### 👋 Human Handoff
 - **Confidence Threshold**: Escalate to human if confidence < 70%

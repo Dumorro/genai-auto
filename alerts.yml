@@ -152,3 +152,123 @@ groups:
         annotations:
           summary: "Metrics not being collected properly"
           description: "No LLM metrics scraped in 15 minutes despite traffic"
+
+  # ====================================================================
+  # ADVANCED METRICS ALERTS (PHASE 2)
+  # ====================================================================
+  
+  - name: rag_quality_alerts
+    interval: 1m
+    rules:
+      - alert: LowRAGSimilarity
+        expr: avg(rag_similarity_score) < 0.6
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAG retrieval quality is low"
+          description: "Average similarity score below 0.6 (current: {{ $value | printf \"%.2f\" }})"
+      
+      - alert: SlowRAGSearch
+        expr: histogram_quantile(0.95, rate(rag_search_latency_ms_bucket[5m])) > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow RAG vector search"
+          description: "P95 search latency exceeds 500ms (current: {{ $value | printf \"%.0f\" }}ms)"
+  
+  - name: cache_alerts
+    interval: 1m
+    rules:
+      - alert: LowCacheHitRate
+        expr: |
+          rate(cache_operations_total{operation="hit"}[15m]) / 
+          rate(cache_operations_total[15m]) < 0.4
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Hit rate below 40% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: HighCacheLatency
+        expr: |
+          histogram_quantile(0.95, rate(cache_latency_ms_bucket{operation="hit"}[5m])) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High cache latency detected"
+          description: "P95 cache hit latency exceeds 100ms (current: {{ $value | printf \"%.0f\" }}ms)"
+  
+  - name: handoff_alerts
+    interval: 1m
+    rules:
+      - alert: HighHandoffRate
+        expr: |
+          rate(human_handoff_total[1h]) / 
+          rate(request_latency_seconds_count{endpoint="/api/v1/chat"}[1h]) > 0.2
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High handoff rate detected"
+          description: "Handoff rate exceeds 20% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: FrequentLowConfidenceHandoffs
+        expr: rate(human_handoff_total{reason="low_confidence"}[15m]) > 0.15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frequent low-confidence handoffs"
+          description: "More than 9 per hour ({{ $value | printf \"%.2f\" }}/min)"
+  
+  - name: task_completion_alerts
+    interval: 1m
+    rules:
+      - alert: LowTaskCompletionRate
+        expr: |
+          rate(task_completion_total{status="completed"}[1h]) / 
+          rate(task_completion_total[1h]) < 0.6
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low task completion rate"
+          description: "Completion rate below 60% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: HighAbandonmentRate
+        expr: |
+          rate(task_completion_total{status="abandoned"}[1h]) / 
+          rate(task_completion_total[1h]) > 0.3
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High task abandonment rate"
+          description: "Abandonment rate exceeds 30% (current: {{ $value | humanizePercentage }})"
+  
+  - name: routing_alerts
+    interval: 1m
+    rules:
+      - alert: LowRoutingConfidence
+        expr: avg(agent_routing_confidence) < 0.65
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low agent routing confidence"
+          description: "Average confidence below 0.65 (current: {{ $value | printf \"%.2f\" }})"
+      
+      - alert: HighReroutingRate
+        expr: |
+          rate(agent_rerouting_total{reason="wrong_agent"}[15m]) / 
+          rate(agent_routing_total[15m]) > 0.15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rerouting rate (routing errors)"
+          description: "More than 15% of routes need correction (current: {{ $value | humanizePercentage }})"
