@@ -15,35 +15,33 @@ Multi-agent AI system for automotive customer service - designed for vehicle man
 
 ## Architecture
 
-```
-┌─────────────┐     ┌─────────────┐     ┌──────────────────────────────────┐
-│  Frontend   │────▶│ API Gateway │────▶│      Orchestrator (LangGraph)    │
-│  (Chat UI)  │     │  FastAPI    │     │         State Machine            │
-└─────────────┘     └─────────────┘     └──────────────┬───────────────────┘
-                                                       │
-                    ┌──────────────────────────────────┼──────────────────────────────────┐
-                    │                                  │                                  │
-                    ▼                                  ▼                                  ▼
-        ┌───────────────────┐          ┌───────────────────────┐          ┌───────────────────────┐
-        │  Agent: Specs     │          │  Agent: Maintenance   │          │  Agent: Troubleshoot  │
-        │  (RAG + Manuals)  │          │  (Scheduling)         │          │  (Diagnostics)        │
-        └─────────┬─────────┘          └───────────────────────┘          └───────────────────────┘
-                  │
-                  ▼
-        ┌───────────────────┐
-        │   RAG Pipeline    │
-        │  ┌─────────────┐  │
-        │  │  Chunker    │  │
-        │  │  Embeddings │  │
-        │  │  VectorStore│  │
-        │  └─────────────┘  │
-        └─────────┬─────────┘
-                  │
-                  ▼
-        ┌───────────────────┐
-        │ PostgreSQL        │
-        │ + pgvector        │
-        └───────────────────┘
+```mermaid
+graph TD
+    A[Frontend<br/>Chat UI] --> B[API Gateway<br/>FastAPI]
+    B --> C[Orchestrator<br/>LangGraph State Machine]
+    
+    C --> D[Agent: Specs<br/>RAG + Manuals]
+    C --> E[Agent: Maintenance<br/>Scheduling]
+    C --> F[Agent: Troubleshoot<br/>Diagnostics]
+    
+    D --> G[RAG Pipeline]
+    G --> H[Chunker]
+    G --> I[Embeddings]
+    G --> J[VectorStore]
+    
+    J --> K[(PostgreSQL<br/>+ pgvector)]
+    
+    B -.-> L[(Redis<br/>Cache)]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#ffe1f5
+    style D fill:#e1ffe1
+    style E fill:#e1ffe1
+    style F fill:#e1ffe1
+    style G fill:#f5e1ff
+    style K fill:#ffe1e1
+    style L fill:#ffe1e1
 ```
 
 ## Agents
