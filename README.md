@@ -1,6 +1,65 @@
 # GenAI Auto 🚗
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+[![LangChain](https://img.shields.io/badge/LangChain-0.3+-purple.svg)](https://www.langchain.com/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-orange.svg)](https://prometheus.io/)
+
 Multi-agent AI system for automotive customer service - designed for vehicle manufacturers.
+
+**Key Features:**
+- 🤖 Multi-agent architecture (Specs, Maintenance, Troubleshoot)
+- 📚 RAG pipeline with pgvector
+- 📊 Production-ready metrics (Prometheus + Grafana)
+- 🔐 JWT authentication
+- ⚡ Redis caching
+- 🚀 Docker-ready deployment
+
+## Table of Contents
+
+- [Features](#features)
+- [Stack](#stack)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [API Endpoints](#api-endpoints)
+- [Production Features](#production-features)
+- [Monitoring & Metrics](#monitoring--metrics)
+- [Configuration](#configuration)
+- [Development](#development)
+- [License](#license)
+
+## Features
+
+### 🤖 Multi-Agent System
+- **Specs Agent**: RAG-powered technical documentation search
+- **Maintenance Agent**: Service scheduling and history
+- **Troubleshoot Agent**: Diagnostic decision trees
+
+### 📊 Production-Ready Monitoring
+- **5 Essential Metrics**: Token usage, cost, latency, errors, feedback
+- **Prometheus Integration**: Ready for scraping
+- **Grafana Dashboards**: Pre-configured queries
+- **15 Alerts**: Cost, latency, errors, satisfaction
+- **Real-time Cost Tracking**: LLM cost per request
+
+### 📚 Advanced RAG Pipeline
+- **Multiple Formats**: PDF, DOCX, TXT, Markdown
+- **Semantic Search**: pgvector similarity search
+- **Smart Chunking**: Recursive, semantic, markdown strategies
+- **Embedding Cache**: Redis-backed for performance
+
+### 🔐 Enterprise Security
+- **JWT Authentication**: Stateless, secure
+- **PII Masking**: Auto-mask sensitive data in logs
+- **Rate Limiting**: Abuse protection
+- **Input Validation**: Strict schema enforcement
+
+### ⚡ Performance
+- **Response Caching**: Redis cache for frequent queries
+- **Connection Pooling**: Optimized database connections
+- **Async Everywhere**: Full async/await support
+- **Human Handoff**: Automatic escalation when confidence < 70%
 
 ## Stack
 
@@ -12,6 +71,7 @@ Multi-agent AI system for automotive customer service - designed for vehicle man
 | **Cache** | Redis | Response and embedding cache |
 | **API** | FastAPI | REST API with OpenAPI docs |
 | **Auth** | JWT built-in | Lightweight auth, no external service |
+| **Metrics** | Prometheus | Production metrics tracking |
 
 ## Architecture
 
@@ -60,7 +120,7 @@ graph TD
 ### 1. Clone and configure
 
 ```bash
-git clone https://github.com/thebotjarvison/genai-auto.git
+git clone https://github.com/Dumorro/genai-auto.git
 cd genai-auto
 
 # Copy configuration
@@ -73,8 +133,14 @@ cp .env.example .env
 
 ### 2. Start containers
 
+**Basic setup (API + Database + Redis):**
 ```bash
 docker-compose up -d
+```
+
+**With monitoring (+ Prometheus + Grafana):**
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.metrics.yml up -d
 ```
 
 ### 3. Seed the knowledge base
@@ -83,11 +149,17 @@ docker-compose up -d
 docker-compose exec api python scripts/seed_knowledge_base.py
 ```
 
-### 4. Access the API
+### 4. Access the services
 
+**Core:**
 - **API**: http://localhost:8000
-- **Docs**: http://localhost:8000/docs
+- **API Docs**: http://localhost:8000/docs
 - **PGAdmin** (optional): http://localhost:5050
+
+**Monitoring (if enabled):**
+- **Metrics Endpoint**: http://localhost:8000/api/v1/metrics
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
 
 ## API Endpoints
 
@@ -114,6 +186,25 @@ curl -X POST http://localhost:8000/api/v1/chat \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"message": "What is the engine power of the GenAuto X1?"}'
+```
+
+### Metrics & Feedback
+
+```bash
+# Get Prometheus metrics
+curl http://localhost:8000/api/v1/metrics
+
+# Submit user feedback (thumbs up/down)
+curl -X POST http://localhost:8000/api/v1/feedback \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message_id": "msg_123",
+    "sentiment": "positive",
+    "comment": "Very helpful!"
+  }'
+
+# Metrics summary
+curl http://localhost:8000/api/v1/metrics/summary
 ```
 
 ### RAG - Knowledge Base
@@ -248,31 +339,114 @@ MASK_PII=true
 ```
 genai-auto/
 ├── src/
-│   ├── api/                 # FastAPI application
-│   │   ├── auth/            # JWT authentication
-│   │   ├── routes/          # API endpoints
-│   │   ├── cache.py         # Redis caching
-│   │   ├── handoff.py       # Human handoff
-│   │   ├── observability.py # Tracing & metrics
-│   │   └── pii.py           # PII protection
-│   ├── agents/              # LangGraph agents
-│   │   ├── specs/           # RAG + documentation
-│   │   ├── maintenance/     # Scheduling
-│   │   └── troubleshoot/    # Diagnostics
-│   ├── orchestrator/        # LangGraph state machine
-│   ├── rag/                 # RAG pipeline
-│   │   ├── pipeline.py      # Main orchestrator
-│   │   ├── chunker.py       # Document chunking
-│   │   ├── embeddings.py    # Embedding service
-│   │   └── vectorstore.py   # pgvector operations
-│   └── storage/             # Database models
+│   ├── api/                        # FastAPI application
+│   │   ├── auth/                   # JWT authentication
+│   │   ├── routes/                 # API endpoints
+│   │   │   ├── chat_example.py     # Chat with metrics integration
+│   │   │   └── metrics_routes.py   # Metrics & feedback endpoints
+│   │   ├── cache.py                # Redis caching
+│   │   ├── handoff.py              # Human handoff
+│   │   ├── metrics.py              # ✨ Prometheus metrics tracking
+│   │   ├── observability.py        # Tracing & metrics
+│   │   └── pii.py                  # PII protection
+│   ├── agents/                     # LangGraph agents
+│   │   ├── specs/                  # RAG + documentation
+│   │   ├── maintenance/            # Scheduling
+│   │   └── troubleshoot/           # Diagnostics
+│   ├── orchestrator/               # LangGraph state machine
+│   ├── rag/                        # RAG pipeline
+│   │   ├── pipeline.py             # Main orchestrator
+│   │   ├── chunker.py              # Document chunking
+│   │   ├── embeddings.py           # Embedding service
+│   │   └── vectorstore.py          # pgvector operations
+│   └── storage/                    # Database models
+├── docs/
+│   ├── architecture/
+│   │   └── ARCHITECTURE.md         # Detailed architecture
+│   └── METRICS.md                  # ✨ Complete metrics guide
 ├── scripts/
-│   ├── seed_knowledge_base.py  # Populate sample data
-│   └── init_postgres.sql       # Database schema
-├── docker-compose.yml
+│   ├── seed_knowledge_base.py      # Populate sample data
+│   └── init_postgres.sql           # Database schema
+├── docker-compose.yml              # Main services
+├── docker-compose.metrics.yml      # ✨ Prometheus + Grafana
+├── prometheus.yml                  # ✨ Prometheus config
+├── alerts.yml                      # ✨ Alert rules (15 alerts)
 ├── Dockerfile
 └── requirements.txt
+
+✨ = Metrics-related files
 ```
+
+## Monitoring & Metrics
+
+GenAI Auto includes production-ready metrics tracking powered by Prometheus.
+
+### Available Metrics
+
+| Metric | Description | Use Case |
+|--------|-------------|----------|
+| **Token Usage** | Input/output tokens per agent/model | Cost forecasting, usage trends |
+| **Cost per Request** | Real-time LLM cost in dollars | Budget monitoring, alerts |
+| **Response Latency** | P50/P95/P99 distributions | SLA monitoring, performance |
+| **Error Rate** | HTTP + LLM errors by type | Incident detection, debugging |
+| **User Feedback** | Thumbs up/down tracking | Satisfaction monitoring, A/B testing |
+
+### Quick Queries
+
+**Cost per hour:**
+```promql
+rate(llm_cost_dollars_total[1h]) * 3600
+```
+
+**P95 latency:**
+```promql
+histogram_quantile(0.95, rate(request_latency_seconds_bucket[5m]))
+```
+
+**Error rate %:**
+```promql
+rate(http_errors_total[5m]) / rate(request_latency_seconds_count[5m]) * 100
+```
+
+**User satisfaction %:**
+```promql
+rate(user_feedback_total{sentiment="positive"}[1h]) / rate(user_feedback_total[1h]) * 100
+```
+
+### Pre-configured Alerts
+
+15 alerts included in `alerts.yml`:
+- 💰 High/Critical LLM Cost ($10/h, $50/h)
+- ⏱️ High/Very High Latency (5s, 10s)
+- ❌ High/Critical Error Rate (5%, 20%)
+- 😞 Low/Very Low User Satisfaction (60%, 40%)
+- 🔥 API Down
+- 📊 Too Many Concurrent Requests
+
+### Integration Example
+
+```python
+from api.metrics import track_llm_call, track_endpoint_metrics
+
+@track_endpoint_metrics('chat')  # Automatic latency tracking
+async def chat(request):
+    start = time.time()
+    result = await llm.generate(request.message)
+    
+    track_llm_call(
+        model="llama-3.1-8b",
+        agent="specs",
+        input_tokens=result.usage.input,
+        output_tokens=result.usage.output,
+        duration=time.time() - start
+    )
+    
+    return result
+```
+
+📖 **[Complete Metrics Guide →](docs/METRICS.md)**
+
+---
 
 ## Development
 
@@ -295,10 +469,52 @@ uvicorn src.api.main:app --reload
 pytest tests/ -v
 ```
 
+## Documentation
+
+- **[Architecture Guide](docs/architecture/ARCHITECTURE.md)** - Detailed system architecture
+- **[Metrics Guide](docs/METRICS.md)** - Complete metrics documentation
+- **[API Reference](http://localhost:8000/docs)** - OpenAPI/Swagger docs (when running)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: add some amazing feature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Roadmap
+
+- [ ] WebSocket support for real-time chat streaming
+- [ ] Multi-language support (i18n)
+- [ ] Voice input/output integration
+- [ ] Advanced analytics dashboard
+- [ ] Plugin system for custom agents
+- [ ] Knowledge base versioning
+- [ ] A/B testing framework
+
+## Support
+
+- 📖 **Documentation**: [docs/](docs/)
+- 💬 **Issues**: [GitHub Issues](https://github.com/Dumorro/genai-auto/issues)
+- 📧 **Email**: tfcoelho@msn.com
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
+## Acknowledgments
+
+- [LangChain](https://www.langchain.com/) - LLM framework
+- [LangGraph](https://langchain-ai.github.io/langgraph/) - Multi-agent orchestration
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern API framework
+- [Prometheus](https://prometheus.io/) - Metrics and monitoring
+- [OpenRouter](https://openrouter.ai/) - LLM API aggregator
+
 ---
 
 **GenAI Auto** | Multi-Agent System for Automotive Customer Service
+
+Built with ❤️ by [Thiago Coelho](https://github.com/Dumorro)
