@@ -33,15 +33,18 @@ graph TD
     
     B -.-> L[(Redis<br/>Cache)]
     
-    style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style C fill:#ffe1f5
-    style D fill:#e1ffe1
-    style E fill:#e1ffe1
-    style F fill:#e1ffe1
-    style G fill:#f5e1ff
-    style K fill:#ffe1e1
-    style L fill:#ffe1e1
+    style A fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#F5A623,stroke:#C77D1A,stroke-width:3px,color:#000
+    style C fill:#BD10E0,stroke:#8A0CAA,stroke-width:3px,color:#fff
+    style D fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000
+    style E fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000
+    style F fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000
+    style G fill:#9013FE,stroke:#6B0EBE,stroke-width:3px,color:#fff
+    style H fill:#9013FE,stroke:#6B0EBE,stroke-width:2px,color:#fff
+    style I fill:#9013FE,stroke:#6B0EBE,stroke-width:2px,color:#fff
+    style J fill:#9013FE,stroke:#6B0EBE,stroke-width:2px,color:#fff
+    style K fill:#D0021B,stroke:#9A0114,stroke-width:3px,color:#fff
+    style L fill:#D0021B,stroke:#9A0114,stroke-width:3px,color:#fff
 ```
 
 ## Agents

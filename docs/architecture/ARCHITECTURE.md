@@ -77,16 +77,24 @@ graph TB
     APIInteg -.-> SQL
     Resolution --> SQL
     
-    style FRONTEND fill:#e1f5ff
-    style API fill:#fff4e1
-    style ORCHESTRATOR fill:#ffe1f5
-    style AGENTS fill:#f0f0f0
-    style SPECS fill:#e1ffe1
-    style MAINT fill:#e1ffe1
-    style TROUBLE fill:#e1ffe1
-    style STORAGE fill:#ffe1e1
-    style Vector fill:#ffcccc
-    style SQL fill:#ffcccc
+    style FRONTEND fill:#4A90E2,stroke:#2E5C8A,stroke-width:4px,color:#fff
+    style API fill:#F5A623,stroke:#C77D1A,stroke-width:4px,color:#000
+    style ORCHESTRATOR fill:#BD10E0,stroke:#8A0CAA,stroke-width:4px,color:#fff
+    style AGENTS fill:#50E3C2,stroke:#3AB89D,stroke-width:4px,color:#000
+    style SPECS fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000
+    style MAINT fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000
+    style TROUBLE fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000
+    style STORAGE fill:#D0021B,stroke:#9A0114,stroke-width:4px,color:#fff
+    style Vector fill:#F8E71C,stroke:#C7B816,stroke-width:3px,color:#000
+    style SQL fill:#F8E71C,stroke:#C7B816,stroke-width:3px,color:#000
+    style UI fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style FastAPI fill:#F5A623,stroke:#C77D1A,stroke-width:2px,color:#000
+    style StateMachine fill:#BD10E0,stroke:#8A0CAA,stroke-width:2px,color:#fff
+    style Intent fill:#BD10E0,stroke:#8A0CAA,stroke-width:2px,color:#fff
+    style Routing fill:#BD10E0,stroke:#8A0CAA,stroke-width:2px,color:#fff
+    style Context fill:#BD10E0,stroke:#8A0CAA,stroke-width:2px,color:#fff
+    style Fallback fill:#BD10E0,stroke:#8A0CAA,stroke-width:2px,color:#fff
+    style Response fill:#BD10E0,stroke:#8A0CAA,stroke-width:2px,color:#fff
 ```
 
 ## Data Flow
