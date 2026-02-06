@@ -1,0 +1,426 @@
+{
+  "dashboard": {
+    "title": "GenAI Auto - Production Metrics",
+    "tags": ["genai", "llm", "ai", "production"],
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "panels": [
+      {
+        "title": "Overview",
+        "type": "row",
+        "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+        "collapsed": false
+      },
+      {
+        "title": "Total Requests",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+        "targets": [
+          {
+            "expr": "sum(rate(request_latency_seconds_count[5m])) * 60",
+            "legendFormat": "req/min"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqpm",
+            "decimals": 1
+          }
+        }
+      },
+      {
+        "title": "LLM Cost (Last Hour)",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+        "targets": [
+          {
+            "expr": "increase(llm_cost_dollars_total[1h])",
+            "legendFormat": "USD"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": null, "color": "green" },
+                { "value": 5, "color": "yellow" },
+                { "value": 10, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "P95 Latency",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(request_latency_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": null, "color": "green" },
+                { "value": 2, "color": "yellow" },
+                { "value": 5, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Error Rate",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+        "targets": [
+          {
+            "expr": "rate(http_errors_total[5m]) / rate(request_latency_seconds_count[5m]) * 100",
+            "legendFormat": "%"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": null, "color": "green" },
+                { "value": 3, "color": "yellow" },
+                { "value": 5, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "User Satisfaction",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+        "targets": [
+          {
+            "expr": "rate(user_feedback_total{sentiment=\"positive\"}[1h]) / rate(user_feedback_total[1h]) * 100",
+            "legendFormat": "%"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": null, "color": "red" },
+                { "value": 60, "color": "yellow" },
+                { "value": 75, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Cache Hit Rate",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+        "targets": [
+          {
+            "expr": "rate(cache_operations_total{operation=\"hit\"}[5m]) / rate(cache_operations_total[5m]) * 100",
+            "legendFormat": "%"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": null, "color": "red" },
+                { "value": 40, "color": "yellow" },
+                { "value": 70, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Essential Metrics (Phase 1)",
+        "type": "row",
+        "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+        "collapsed": false
+      },
+      {
+        "title": "Token Usage Over Time",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+        "targets": [
+          {
+            "expr": "sum(rate(llm_tokens_total{type=\"input\"}[5m])) * 60",
+            "legendFormat": "Input tokens/min"
+          },
+          {
+            "expr": "sum(rate(llm_tokens_total{type=\"output\"}[5m])) * 60",
+            "legendFormat": "Output tokens/min"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Tokens/min" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "LLM Cost Over Time",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+        "targets": [
+          {
+            "expr": "sum(rate(llm_cost_dollars_total[5m])) * 3600",
+            "legendFormat": "Cost per hour"
+          }
+        ],
+        "yaxes": [
+          { "format": "currencyUSD", "label": "USD/hour" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Latency Distribution",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(request_latency_seconds_bucket[5m]))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(request_latency_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(request_latency_seconds_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "label": "Latency" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Error Rate by Type",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+        "targets": [
+          {
+            "expr": "sum by (status_code) (rate(http_errors_total[5m]))",
+            "legendFormat": "{{status_code}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Errors/sec" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Advanced Metrics (Phase 2)",
+        "type": "row",
+        "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+        "collapsed": false
+      },
+      {
+        "title": "RAG Similarity Score Distribution",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+        "targets": [
+          {
+            "expr": "avg(rag_similarity_score)",
+            "legendFormat": "Average similarity"
+          },
+          {
+            "expr": "histogram_quantile(0.5, rate(rag_similarity_score_bucket[5m]))",
+            "legendFormat": "P50 similarity"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(rag_similarity_score_bucket[5m]))",
+            "legendFormat": "P95 similarity"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Similarity Score", "min": 0, "max": 1 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Cache Operations",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+        "targets": [
+          {
+            "expr": "sum(rate(cache_operations_total{operation=\"hit\"}[5m]))",
+            "legendFormat": "Cache hits/sec"
+          },
+          {
+            "expr": "sum(rate(cache_operations_total{operation=\"miss\"}[5m]))",
+            "legendFormat": "Cache misses/sec"
+          }
+        ],
+        "yaxes": [
+          { "format": "ops", "label": "Operations/sec" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Human Handoff Rate",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
+        "targets": [
+          {
+            "expr": "sum by (reason) (rate(human_handoff_total[5m])) * 60",
+            "legendFormat": "{{reason}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Handoffs/min" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Task Completion Status",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 31 },
+        "targets": [
+          {
+            "expr": "sum by (status) (rate(task_completion_total[5m])) * 60",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Tasks/min" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Agent Routing Confidence",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
+        "targets": [
+          {
+            "expr": "avg by (selected_agent) (agent_routing_confidence)",
+            "legendFormat": "{{selected_agent}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Confidence", "min": 0, "max": 1 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Agent Rerouting Events",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 39 },
+        "targets": [
+          {
+            "expr": "sum by (from_agent, to_agent) (rate(agent_rerouting_total[5m])) * 60",
+            "legendFormat": "{{from_agent}} → {{to_agent}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Reroutes/min" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Performance Analysis",
+        "type": "row",
+        "gridPos": { "h": 1, "w": 24, "x": 0, "y": 47 },
+        "collapsed": false
+      },
+      {
+        "title": "Token Usage by Agent",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 48 },
+        "targets": [
+          {
+            "expr": "sum by (agent) (rate(llm_tokens_total[5m])) * 60",
+            "legendFormat": "{{agent}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Tokens/min" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "Cost by Agent",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 48 },
+        "targets": [
+          {
+            "expr": "sum by (agent) (rate(llm_cost_dollars_total[5m])) * 3600",
+            "legendFormat": "{{agent}}"
+          }
+        ],
+        "yaxes": [
+          { "format": "currencyUSD", "label": "USD/hour" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "title": "RAG Search Latency P95",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 48 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(rag_search_latency_ms_bucket[5m]))",
+            "legendFormat": "P95 latency"
+          }
+        ],
+        "yaxes": [
+          { "format": "ms", "label": "Latency" },
+          { "format": "short" }
+        ]
+      }
+    ]
+  },
+  "overwrite": true
+}
