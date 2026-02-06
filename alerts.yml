@@ -1,0 +1,154 @@
+# Prometheus alert rules for GenAI Auto
+
+groups:
+  - name: genai_auto_alerts
+    interval: 1m
+    rules:
+      # ====================================================================
+      # COST ALERTS
+      # ====================================================================
+      
+      - alert: HighLLMCost
+        expr: rate(llm_cost_dollars_total[1h]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High LLM cost detected"
+          description: "LLM spend exceeds $10/hour (current: {{ $value | humanize }})"
+      
+      - alert: CriticalLLMCost
+        expr: rate(llm_cost_dollars_total[1h]) > 50
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL: Very high LLM cost"
+          description: "LLM spend exceeds $50/hour (current: {{ $value | humanize }})"
+      
+      # ====================================================================
+      # LATENCY ALERTS
+      # ====================================================================
+      
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(request_latency_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency detected"
+          description: "P95 latency exceeds 5 seconds (current: {{ $value | humanize }}s)"
+      
+      - alert: VeryHighLatency
+        expr: histogram_quantile(0.95, rate(request_latency_seconds_bucket[5m])) > 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL: Very high latency"
+          description: "P95 latency exceeds 10 seconds (current: {{ $value | humanize }}s)"
+      
+      - alert: SlowLLMResponse
+        expr: histogram_quantile(0.95, rate(llm_latency_seconds_bucket[5m])) > 8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow LLM response times"
+          description: "P95 LLM latency exceeds 8 seconds (current: {{ $value | humanize }}s)"
+      
+      # ====================================================================
+      # ERROR RATE ALERTS
+      # ====================================================================
+      
+      - alert: HighErrorRate
+        expr: |
+          rate(http_errors_total[5m]) / rate(request_latency_seconds_count[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate exceeds 5% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: CriticalErrorRate
+        expr: |
+          rate(http_errors_total[5m]) / rate(request_latency_seconds_count[5m]) > 0.20
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL: Very high error rate"
+          description: "Error rate exceeds 20% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: FrequentLLMErrors
+        expr: rate(llm_errors_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frequent LLM errors"
+          description: "LLM errors occurring at {{ $value | humanize }} per second"
+      
+      # ====================================================================
+      # USER SATISFACTION ALERTS
+      # ====================================================================
+      
+      - alert: LowUserSatisfaction
+        expr: |
+          rate(user_feedback_total{sentiment="positive"}[1h]) 
+          / rate(user_feedback_total[1h]) < 0.6
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low user satisfaction detected"
+          description: "Positive feedback rate below 60% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: VeryLowUserSatisfaction
+        expr: |
+          rate(user_feedback_total{sentiment="positive"}[1h]) 
+          / rate(user_feedback_total[1h]) < 0.4
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL: Very low user satisfaction"
+          description: "Positive feedback rate below 40% (current: {{ $value | humanizePercentage }})"
+      
+      # ====================================================================
+      # RESOURCE ALERTS
+      # ====================================================================
+      
+      - alert: TooManyInProgressRequests
+        expr: requests_in_progress > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of concurrent requests"
+          description: "More than 100 requests in progress (current: {{ $value }})"
+      
+      # ====================================================================
+      # AVAILABILITY ALERTS
+      # ====================================================================
+      
+      - alert: APIDown
+        expr: up{job="genai-auto-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "GenAI Auto API is down"
+          description: "API has been down for more than 1 minute"
+      
+      - alert: NoMetricsScraped
+        expr: |
+          increase(llm_tokens_total[15m]) == 0 
+          AND increase(request_latency_seconds_count[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Metrics not being collected properly"
+          description: "No LLM metrics scraped in 15 minutes despite traffic"

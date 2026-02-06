@@ -180,10 +180,18 @@ curl -X DELETE http://localhost:8000/api/v1/documents/manual.pdf \
 - **PII Masking**: Auto-mask SSN, VIN, license plates in logs
 - **Rate Limiting**: Abuse protection
 
-### 📊 Observability
+### 📊 Metrics & Observability
+- **5 Essential Metrics** (Prometheus-ready):
+  - ✅ **Token Usage** (input/output per agent/model)
+  - ✅ **Cost per Request** (real-time LLM cost tracking)
+  - ✅ **Response Latency** (P50/P95/P99 distributions)
+  - ✅ **Error Rate** (HTTP + LLM errors by type)
+  - ✅ **User Feedback** (thumbs up/down tracking)
+- **Prometheus Endpoint**: `/api/v1/metrics`
+- **Grafana Dashboards**: Pre-configured queries for visualization
 - **Request Tracing**: X-Request-ID on all requests
-- **Token Usage**: Token consumption monitoring
-- **Metrics**: `/api/v1/metrics` for monitoring
+
+📖 **[Full Metrics Guide →](docs/METRICS.md)**
 
 ### 👋 Human Handoff
 - **Confidence Threshold**: Escalate to human if confidence < 70%
