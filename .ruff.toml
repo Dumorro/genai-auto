@@ -29,7 +29,9 @@ ignore = [
     "UP006", # list/dict instead of List/Dict (Python 3.9+)
     "B904",  # raise from clause (not critical for now)
     "B007",  # loop variable not used (sometimes intentional)
+    "B905",  # zip strict parameter (Python 3.10+)
     "C401",  # unnecessary generator (style preference)
+    "UP015", # unnecessary open mode (style preference)
 ]
 
 # Allow unused variables when prefixed with underscore

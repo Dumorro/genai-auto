@@ -1,6 +1,5 @@
 """Vector store using PostgreSQL + pgvector."""
 
-import json
 from typing import List, Dict, Any
 from uuid import uuid4
 from datetime import datetime
