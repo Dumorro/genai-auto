@@ -1,14 +1,15 @@
 """
-import asyncio
 Example chat endpoint with integrated metrics tracking.
 
 This is a REFERENCE implementation showing how to integrate metrics
 into your actual chat endpoint.
 """
 
+import asyncio
+import time
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import time
+
 from ..metrics import track_llm_call, track_llm_error, track_endpoint_metrics
 
 
