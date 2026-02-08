@@ -5,7 +5,6 @@ This is a REFERENCE implementation showing how to integrate metrics
 into your actual chat endpoint.
 """
 
-import asyncio
 import time
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
