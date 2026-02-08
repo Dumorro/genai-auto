@@ -99,7 +99,7 @@ async def chat(request: ChatRequest):
             }
         )
     
-    except Exception:
+    except asyncio.TimeoutError:
         # Track timeout errors
         track_llm_error(error_type='timeout', model=model)
         raise HTTPException(status_code=504, detail="LLM request timed out")
