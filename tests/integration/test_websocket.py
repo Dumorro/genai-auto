@@ -35,12 +35,14 @@ class TestWebSocketChat:
         async with httpx.AsyncClient() as client:
             # Try to register (may already exist)
             response = await client.post(
-                f"{BASE_URL}/api/v1/auth/register"=TEST_USER
+                f"{BASE_URL}/api/v1/auth/register",
+                json=TEST_USER
             )
             
             # Login to get token
             response = await client.post(
-                f"{BASE_URL}/api/v1/auth/login"={
+                f"{BASE_URL}/api/v1/auth/login",
+                json={
                     "email": TEST_USER["email"],
                     "password": TEST_USER["password"]
                 }
