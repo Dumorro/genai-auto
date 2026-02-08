@@ -108,7 +108,7 @@ class DocumentEmbedding(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     content = Column(Text, nullable=False)
-    metadata = Column(JSONB)
+    doc_metadata = Column(JSONB)  # Renamed from 'metadata' (reserved name)
     embedding = Column(Vector(1536))
     source = Column(String(255))
     document_type = Column(String(100))
@@ -124,7 +124,7 @@ class Conversation(Base):
     session_id = Column(String(255), nullable=False, index=True)
     customer_id = Column(UUID(as_uuid=True), ForeignKey("customers.id", ondelete="SET NULL"))
     messages = Column(JSONB, default=list)
-    metadata = Column(JSONB, default=dict)
+    conversation_metadata = Column(JSONB, default=dict)  # Renamed from 'metadata' (reserved name)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

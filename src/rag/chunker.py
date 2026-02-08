@@ -6,7 +6,7 @@ from enum import Enum
 
 import structlog
 from pydantic import BaseModel, Field
-from langchain.text_splitter import (
+from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     MarkdownHeaderTextSplitter,
 )

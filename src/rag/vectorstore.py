@@ -99,13 +99,13 @@ class VectorStore:
             await self.db.execute(
                 text("""
                     INSERT INTO document_embeddings 
-                    (id, content, metadata, embedding, source, document_type)
-                    VALUES (:id, :content, :metadata, :embedding::vector, :source, :document_type)
+                    (id, content, doc_metadata, embedding, source, document_type)
+                    VALUES (:id, :content, :doc_metadata, :embedding::vector, :source, :document_type)
                 """),
                 {
                     "id": str(uuid4()),
                     "content": content,
-                    "metadata": chunk_metadata,
+                    "doc_metadata": chunk_metadata,
                     "embedding": embedding,
                     "source": source,
                     "document_type": document_type,
@@ -163,7 +163,7 @@ class VectorStore:
             SELECT 
                 id,
                 content, 
-                metadata, 
+                doc_metadata as metadata, 
                 source, 
                 document_type,
                 1 - (embedding <=> :embedding::vector) as score
@@ -238,7 +238,7 @@ class VectorStore:
         result = await self.db.execute(
             text("""
                 DELETE FROM document_embeddings 
-                WHERE metadata->>'document_id' = :document_id
+                WHERE doc_metadata->>'document_id' = :document_id
             """),
             {"document_id": document_id},
         )
