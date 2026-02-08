@@ -104,7 +104,7 @@ async def chat(request: ChatRequest):
         track_llm_error(error_type='timeout', model=model)
         raise HTTPException(status_code=504, detail="LLM request timed out")
     
-    except Exception:
+    except Exception as e:
         # Track general errors
         track_llm_error(error_type='api_error', model=model)
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
