@@ -61,4 +61,3 @@ volumes:
 networks:
   default:
     name: genai-auto-network
-    external: true
