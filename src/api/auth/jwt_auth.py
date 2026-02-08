@@ -20,8 +20,8 @@ from src.storage.models import User
 logger = structlog.get_logger()
 settings = get_settings()
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing (using Argon2 - more secure and no length limit)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # Bearer token security
 security = HTTPBearer(auto_error=False)
@@ -70,20 +70,12 @@ class AuthenticatedUser(BaseModel):
 # ============== Password Utils ==============
 
 def hash_password(password: str) -> str:
-    """Hash a password."""
-    # Bcrypt has a 72-byte limit, truncate if necessary
-    if len(password.encode('utf-8')) > 72:
-        # Truncate to 72 characters (not bytes, for simplicity)
-        password = password[:72]
+    """Hash a password using Argon2."""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against hash."""
-    # Bcrypt has a 72-byte limit, truncate if necessary
-    if len(plain_password.encode('utf-8')) > 72:
-        # Truncate to 72 characters (not bytes, for simplicity)
-        plain_password = plain_password[:72]
+    """Verify a password against Argon2 hash."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
