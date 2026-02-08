@@ -1,71 +1,52 @@
-"""Pytest configuration and fixtures."""
+"""
+Pytest configuration and fixtures for GenAI Auto tests.
+"""
 
-import os
 import pytest
+import asyncio
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
-# Set test environment variables before importing app
-os.environ["TESTING"] = "true"
-os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing"
-os.environ["DATABASE_URL"] = "postgresql://test:test@localhost:5432/test_db"
-os.environ["REDIS_URL"] = "redis://localhost:6379"
-os.environ["OPENROUTER_API_KEY"] = "test-api-key"
-os.environ["CACHE_ENABLED"] = "false"
+from src.api.config import get_settings
 
 
 @pytest.fixture(scope="session")
-def anyio_backend():
-    """Use asyncio backend for async tests."""
-    return "asyncio"
+def event_loop():
+    """Create event loop for async tests."""
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
+def settings():
+    """Get application settings."""
+    return get_settings()
+
+
+@pytest.fixture(scope="session")
+async def db_engine(settings):
+    """Create database engine for tests."""
+    engine = create_async_engine(
+        settings.database_url,
+        echo=False,
+        future=True
+    )
+    yield engine
+    await engine.dispose()
 
 
 @pytest.fixture
-def sample_document():
-    """Sample document content for testing."""
-    return """
-# GenAuto X1 Specifications
-
-## Engine
-- Type: 2.0L Turbocharged
-- Power: 250 hp
-- Torque: 280 lb-ft
-
-## Transmission
-- 6-speed automatic
-- Manual mode available
-
-## Dimensions
-- Length: 185 inches
-- Width: 73 inches
-- Height: 57 inches
-- Wheelbase: 110 inches
-
-## Safety Features
-- 6 airbags
-- ABS braking
-- Electronic stability control
-- Blind spot monitoring
-"""
-
-
-@pytest.fixture
-def sample_user_data():
-    """Sample user data for auth testing."""
-    return {
-        "email": "test@example.com",
-        "password": "securepassword123",
-        "name": "Test User",
-    }
-
-
-@pytest.fixture
-def auth_headers(sample_user_data):
-    """Generate auth headers with a test token."""
-    from src.api.auth.jwt_auth import create_tokens
-    
-    tokens = create_tokens(
-        user_id="test-user-id",
-        email=sample_user_data["email"],
-        name=sample_user_data["name"],
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Create database session for tests."""
+    async_session = sessionmaker(
+        db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
     )
     
-    return {"Authorization": f"Bearer {tokens.access_token}"}
+    async with async_session() as session:
+        yield session
+        await session.rollback()

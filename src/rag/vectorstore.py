@@ -96,17 +96,21 @@ class VectorStore:
                 "indexed_at": datetime.utcnow().isoformat(),
             }
 
+            # Convert embedding list to PostgreSQL vector format
+            import json
+            embedding_str = f"[{','.join(map(str, embedding))}]"
+            
             await self.db.execute(
                 text("""
                     INSERT INTO document_embeddings 
                     (id, content, doc_metadata, embedding, source, document_type)
-                    VALUES (:id, :content, :doc_metadata, :embedding::vector, :source, :document_type)
+                    VALUES (:id, :content, CAST(:doc_metadata AS jsonb), CAST(:embedding AS vector), :source, :document_type)
                 """),
                 {
                     "id": str(uuid4()),
                     "content": content,
-                    "doc_metadata": chunk_metadata,
-                    "embedding": embedding,
+                    "doc_metadata": json.dumps(chunk_metadata),
+                    "embedding": embedding_str,
                     "source": source,
                     "document_type": document_type,
                 },
@@ -159,6 +163,10 @@ class VectorStore:
         query_embedding = await self.embedding_service.embed_query(query)
 
         # Build query with filters
+        # Convert embedding to PostgreSQL vector format
+        import json
+        embedding_str = f"[{','.join(map(str, query_embedding))}]"
+        
         sql = """
             SELECT 
                 id,
@@ -166,12 +174,12 @@ class VectorStore:
                 doc_metadata as metadata, 
                 source, 
                 document_type,
-                1 - (embedding <=> :embedding::vector) as score
+                1 - (embedding <=> CAST(:embedding AS vector)) as score
             FROM document_embeddings
             WHERE 1=1
         """
         params = {
-            "embedding": query_embedding,
+            "embedding": embedding_str,
             "top_k": top_k,
             "min_score": min_score,
         }
@@ -185,8 +193,8 @@ class VectorStore:
             params["source"] = source
 
         sql += """
-            AND 1 - (embedding <=> :embedding::vector) >= :min_score
-            ORDER BY embedding <=> :embedding::vector
+            AND 1 - (embedding <=> CAST(:embedding AS vector)) >= :min_score
+            ORDER BY embedding <=> CAST(:embedding AS vector)
             LIMIT :top_k
         """
 
