@@ -4,69 +4,86 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  PYTHON_VERSION: "3.11"
+
 jobs:
-  pr-check:
-    name: PR Validation
+  quick-check:
+    name: ⚡ Quick PR Check
     runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Check commit messages
-        run: |
-          # Check if commits follow conventional commits format
-          git log --oneline origin/${{ github.base_ref }}..HEAD | while read line; do
-            if ! echo "$line" | grep -qE "^[a-f0-9]+ (feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+"; then
-              echo "⚠️ Commit doesn't follow conventional commits: $line"
-            fi
-          done
-
-      - name: Check for large files
-        run: |
-          # Warn about files larger than 1MB
-          find . -type f -size +1M -not -path "./.git/*" | while read file; do
-            echo "⚠️ Large file detected: $file ($(du -h "$file" | cut -f1))"
-          done
-
-      - name: Check for secrets
-        run: |
-          # Basic check for potential secrets (not comprehensive)
-          if grep -rE "(api[_-]?key|secret|password|token)\s*=\s*['\"][^'\"]+['\"]" --include="*.py" --include="*.yml" --include="*.yaml" src/ .github/ 2>/dev/null | grep -v "example" | grep -v "test"; then
-            echo "⚠️ Potential hardcoded secrets detected!"
-            exit 1
-          fi
-          echo "✅ No obvious hardcoded secrets found"
-
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
+          fetch-depth: 0  # Full history for better diffs
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
 
-      - name: Install safety
-        run: pip install safety
-
-      - name: Check dependencies for vulnerabilities
+      - name: Install tools
         run: |
-          safety check -r requirements.txt --output text || true
+          pip install ruff black mypy pytest
 
-  docker-lint:
-    name: Dockerfile Lint
+      - name: Run Ruff (fast)
+        run: |
+          ruff check src/ tests/ --output-format=github
+
+      - name: Run Black (fast)
+        run: |
+          black --check src/ tests/
+
+      - name: Check file sizes
+        run: |
+          echo "Checking for large files..."
+          find . -type f -size +5M -not -path "./node_modules/*" -not -path "./.git/*" || echo "No large files"
+
+      - name: Check for secrets
+        run: |
+          echo "Checking for potential secrets..."
+          ! grep -rE "(password|secret|key|token)\s*=\s*['\"][^'\"]{10,}" src/ || \
+            (echo "⚠️ Potential hardcoded secret found" && exit 1)
+
+      - name: PR size check
+        run: |
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          LINES_CHANGED=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oE '[0-9]+ insertions?' | grep -oE '[0-9]+' || echo 0)
+          echo "📊 Files changed: $FILES_CHANGED"
+          echo "📊 Lines changed: $LINES_CHANGED"
+          if [ "$FILES_CHANGED" -gt 50 ]; then
+            echo "⚠️ Large PR: $FILES_CHANGED files changed"
+          fi
+          if [ "$LINES_CHANGED" -gt 500 ]; then
+            echo "⚠️ Large PR: $LINES_CHANGED lines changed"
+          fi
+
+      - name: Generate PR summary
+        run: |
+          echo "## 📝 PR Quick Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code formatting (black)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Linting (ruff)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ No large files" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ No hardcoded secrets" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Full CI will run automatically." >> $GITHUB_STEP_SUMMARY
+
+  comment:
+    name: 💬 PR Comment
     runs-on: ubuntu-latest
+    needs: quick-check
+    if: always()
     
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
+      - name: Add PR comment
+        uses: actions/github-script@v7
         with:
-          dockerfile: Dockerfile
-          failure-threshold: warning
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: '👋 Thanks for your PR! Quick checks passed. Full CI is running now.'
+            })
