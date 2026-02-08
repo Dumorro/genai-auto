@@ -26,7 +26,10 @@ ignore = [
     "UP045", # Optional[X] -> X | None (Python 3.10+)
     "UP042", # str+Enum inheritance (valid pattern)
     "UP035", # collections.abc imports (not critical)
+    "UP006", # list/dict instead of List/Dict (Python 3.9+)
     "B904",  # raise from clause (not critical for now)
+    "B007",  # loop variable not used (sometimes intentional)
+    "C401",  # unnecessary generator (style preference)
 ]
 
 # Allow unused variables when prefixed with underscore
