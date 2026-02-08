@@ -8,7 +8,6 @@ Provides streaming chat responses with:
 - Error handling and reconnection support
 """
 
-import json
 from typing import Dict, Any, Optional
 from datetime import datetime
 

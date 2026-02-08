@@ -6,7 +6,7 @@ import operator
 import structlog
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.api.config import get_settings
 from src.agents.specs.agent import SpecsAgent

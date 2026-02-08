@@ -505,7 +505,7 @@ async def metrics_middleware(request: Request, call_next: Callable):
         
         return response
     
-    except Exception as e:
+    except Exception:
         duration = time.time() - start_time
         request_latency_seconds.labels(endpoint=endpoint, method=method).observe(duration)
         

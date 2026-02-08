@@ -6,7 +6,6 @@ Tests real-time streaming chat functionality via WebSocket.
 
 import pytest
 import asyncio
-import json
 from typing import List, Dict, Any
 
 import httpx
@@ -36,14 +35,12 @@ class TestWebSocketChat:
         async with httpx.AsyncClient() as client:
             # Try to register (may already exist)
             response = await client.post(
-                f"{BASE_URL}/api/v1/auth/register",
-                json=TEST_USER
+                f"{BASE_URL}/api/v1/auth/register"=TEST_USER
             )
             
             # Login to get token
             response = await client.post(
-                f"{BASE_URL}/api/v1/auth/login",
-                json={
+                f"{BASE_URL}/api/v1/auth/login"={
                     "email": TEST_USER["email"],
                     "password": TEST_USER["password"]
                 }
@@ -170,7 +167,7 @@ class TestWebSocketChat:
                     if data["type"] == "error":
                         pytest.fail(f"Error received: {data['error']}")
                 
-                except Exception as e:
+                except Exception:
                     break
             
             # Verify response structure

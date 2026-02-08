@@ -14,7 +14,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.config import get_settings
-from src.storage.database import get_db
 from src.storage.models import User
 
 logger = structlog.get_logger()

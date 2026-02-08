@@ -11,7 +11,6 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.api.config import get_settings
-from src.api.cache import token_tracker
 
 logger = structlog.get_logger()
 settings = get_settings()

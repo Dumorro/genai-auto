@@ -1,7 +1,6 @@
 """SQLAlchemy ORM models."""
 
 from datetime import datetime
-from typing import Optional
 from uuid import uuid4
 
 from pgvector.sqlalchemy import Vector

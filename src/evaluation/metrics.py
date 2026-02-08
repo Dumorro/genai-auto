@@ -2,7 +2,7 @@
 
 import time
 import math
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -450,7 +450,7 @@ class RAGEvaluator:
             
             # Generate answer
             generation_start = time.perf_counter()
-            context = await pipeline.get_context(query, top_k=k)
+            _context = await pipeline.get_context(query, top_k=k)
             
             from src.agents.specs.agent import SpecsAgent
             agent = SpecsAgent()

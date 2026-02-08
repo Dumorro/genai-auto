@@ -11,7 +11,7 @@ from src.storage.database import get_db
 from src.api.auth import get_current_user, AuthenticatedUser
 from src.evaluation.metrics import RAGEvaluator
 from src.evaluation.dataset import create_sample_dataset, EvaluationDataset, TestCase
-from src.evaluation.runner import EvaluationRunner, EvaluationReport
+from src.evaluation.runner import EvaluationRunner
 
 logger = structlog.get_logger()
 router = APIRouter()

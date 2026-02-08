@@ -1,6 +1,5 @@
 """Authentication tests."""
 
-import pytest
 from src.api.auth.jwt_auth import (
     hash_password,
     verify_password,

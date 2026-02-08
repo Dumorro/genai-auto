@@ -1,7 +1,6 @@
 """PII (Personally Identifiable Information) protection module."""
 
 import re
-from typing import Optional
 import structlog
 
 from src.api.config import get_settings

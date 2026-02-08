@@ -1,7 +1,7 @@
 """Maintenance Agent - Handles scheduling and service appointments."""
 
 from typing import TYPE_CHECKING
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import structlog
 from langchain_openai import ChatOpenAI

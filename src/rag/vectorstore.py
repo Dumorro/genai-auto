@@ -1,6 +1,7 @@
 """Vector store using PostgreSQL + pgvector."""
 
-from typing import List, Optional, Dict, Any
+import json
+from typing import List, Dict, Any
 from uuid import uuid4
 from datetime import datetime
 
@@ -164,7 +165,6 @@ class VectorStore:
 
         # Build query with filters
         # Convert embedding to PostgreSQL vector format
-        import json
         embedding_str = f"[{','.join(map(str, query_embedding))}]"
         
         sql = """

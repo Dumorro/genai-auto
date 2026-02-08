@@ -1,8 +1,7 @@
 """Main RAG pipeline for document ingestion and retrieval."""
 
 import io
-from typing import List, Optional, BinaryIO
-from pathlib import Path
+from typing import List
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession

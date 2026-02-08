@@ -5,7 +5,7 @@ This is a REFERENCE implementation showing how to integrate metrics
 into your actual chat endpoint.
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import time
 from ..metrics import track_llm_call, track_llm_error, track_endpoint_metrics
@@ -99,12 +99,12 @@ async def chat(request: ChatRequest):
             }
         )
     
-    except TimeoutError as e:
+    except Exception:
         # Track timeout errors
         track_llm_error(error_type='timeout', model=model)
         raise HTTPException(status_code=504, detail="LLM request timed out")
     
-    except Exception as e:
+    except Exception:
         # Track general errors
         track_llm_error(error_type='api_error', model=model)
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")

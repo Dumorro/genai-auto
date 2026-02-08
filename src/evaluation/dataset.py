@@ -2,7 +2,6 @@
 
 import json
 from typing import List, Optional
-from pathlib import Path
 from dataclasses import dataclass, field, asdict
 
 import structlog

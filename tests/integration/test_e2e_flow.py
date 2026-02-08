@@ -12,7 +12,7 @@ Tests the complete user flow:
 import pytest
 import httpx
 import asyncio
-from typing import Dict, Any
+from typing import  Any
 
 
 # Base URL for tests

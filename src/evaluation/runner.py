@@ -3,9 +3,8 @@
 import asyncio
 import json
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Dict
 from dataclasses import dataclass, field, asdict
-from pathlib import Path
 
 import structlog
 

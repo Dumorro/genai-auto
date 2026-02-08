@@ -4,10 +4,10 @@ A/B Testing framework for GenAI experiments with metrics tracking.
 
 import hashlib
 import random
-from typing import Dict, List, Optional, Callable, Any
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class ExperimentStatus(Enum):
@@ -222,7 +222,7 @@ class ExperimentMetricsCollector:
         # TODO: Implement actual Prometheus queries
         # This is a placeholder showing the structure
         
-        queries = {
+        _queries = {
             "requests": f'sum(rate(request_latency_seconds_count{{experiment="{experiment_name}",variant="{variant_name}"}}[{duration}]))',
             "avg_latency": f'avg(rate(request_latency_seconds_sum{{experiment="{experiment_name}",variant="{variant_name}"}}[{duration}]) / rate(request_latency_seconds_count{{experiment="{experiment_name}",variant="{variant_name}"}}[{duration}]))',
             "avg_cost": f'avg(rate(llm_cost_dollars_total{{experiment="{experiment_name}",variant="{variant_name}"}}[{duration}]))',

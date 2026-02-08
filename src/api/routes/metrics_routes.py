@@ -2,7 +2,7 @@
 Metrics and feedback routes for GenAI Auto
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Literal
 from ..metrics import get_metrics, track_user_feedback

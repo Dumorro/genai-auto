@@ -4,6 +4,8 @@ Full chat flow E2E tests.
 Tests the complete user journey from registration to chat.
 """
 
+import asyncio
+
 import pytest
 import httpx
 from fastapi.testclient import TestClient
@@ -66,7 +68,6 @@ class TestFullChatFlow:
     @pytest.mark.asyncio
     async def test_anonymous_chat_via_websocket(self):
         """Test anonymous chat via WebSocket (no auth required)."""
-        from fastapi.testclient import TestClient
         from src.api.main import app
         
         client = TestClient(app)
@@ -122,6 +123,3 @@ class TestFullChatFlow:
                     assert response.status_code == 200
                     data = response.json()
                     assert data["status"] == "healthy"
-
-
-import asyncio

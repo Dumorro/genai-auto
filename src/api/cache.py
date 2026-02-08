@@ -2,8 +2,7 @@
 
 import json
 import hashlib
-from typing import Optional, Any
-from functools import wraps
+from typing import Optional
 
 import structlog
 import redis.asyncio as redis

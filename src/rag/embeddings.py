@@ -1,7 +1,6 @@
 """Embedding service for RAG - supports OpenRouter and local models."""
 
-from typing import List, Optional
-import asyncio
+from typing import List
 
 import structlog
 import httpx

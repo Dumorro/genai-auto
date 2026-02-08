@@ -56,7 +56,7 @@ class CacheService:
                 )
                 return None
         
-        except Exception as e:
+        except Exception:
             latency_ms = (time.time() - start_time) * 1000
             track_cache_operation(
                 operation="miss",
@@ -230,9 +230,9 @@ else:
     # Metrics tracked: cache_operations_total{operation="hit"}
 
 # Response cache
-cached_resp = await response_cache.get_response("Hello", context="session_123")
+cached_resp = await response_cache.get_response("Hello", _context ="session_123")
 if not cached_resp:
     # Generate response
     response = await llm.generate("Hello")
-    await response_cache.cache_response("Hello", response, context="session_123")
+    await response_cache.cache_response("Hello", response, _context ="session_123")
 """
