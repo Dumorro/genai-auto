@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>GenAI Auto - New Chat</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1337ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101322",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100dvh;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .custom-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background-light/80 dark:bg-background-dark/80 ios-blur">
+        <button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+        <h1 class="text-lg font-bold tracking-tight">GenAI Auto</h1>
+        <button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <span class="material-symbols-outlined text-2xl leading-none">account_circle</span>
+        </button>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center px-4 pb-24 relative overflow-hidden">
+        <!-- Subtle Branded Background Logo -->
+        <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+            <span class="material-symbols-outlined text-[300px]">auto_awesome</span>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="w-full max-w-md text-center mb-8 relative z-10">
+            <div class="mb-4 inline-flex items-center justify-center size-16 bg-primary/10 rounded-2xl">
+                <span class="material-symbols-outlined text-primary text-4xl font-light">smart_toy</span>
+            </div>
+            <h2 class="text-3xl font-bold leading-tight mb-2">How can I help you today?</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Start a new conversation or select a quick action below.</p>
+        </div>
+
+        <!-- Quick Action Grid -->
+        <div class="w-full max-w-md grid grid-cols-2 gap-3 relative z-10">
+            <!-- Suggestion Card 1 -->
+            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+                <div class="size-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <span class="material-symbols-outlined text-2xl">description</span>
+                </div>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Summarize this text</p>
+            </a>
+
+            <!-- Suggestion Card 2 -->
+            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+                <div class="size-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <span class="material-symbols-outlined text-2xl">mail</span>
+                </div>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Write an email</p>
+            </a>
+
+            <!-- Suggestion Card 3 -->
+            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+                <div class="size-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <span class="material-symbols-outlined text-2xl">terminal</span>
+                </div>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Code a function</p>
+            </a>
+
+            <!-- Suggestion Card 4 -->
+            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+                <div class="size-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
+                    <span class="material-symbols-outlined text-2xl">explore</span>
+                </div>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Plan a trip</p>
+            </a>
+        </div>
+
+        <!-- Category Chips -->
+        <div class="w-full max-w-md mt-6 overflow-x-auto custom-scrollbar flex gap-2 whitespace-nowrap relative z-10">
+            <button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-medium">All</button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Creative</button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Coding</button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Office</button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Learning</button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Analysis</button>
+        </div>
+    </main>
+
+    <!-- Bottom Input Area -->
+    <footer class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent pt-10">
+        <div class="max-w-xl mx-auto flex flex-col gap-3">
+            <div class="bg-white dark:bg-[#1a1f35] rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                <form id="homeForm" class="flex items-end p-2 gap-2">
+                    <div class="flex flex-col flex-1">
+                        <textarea 
+                            id="homeInput"
+                            class="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 py-3 px-4 resize-none max-h-32 min-h-[48px] text-base leading-relaxed" 
+                            placeholder="Message GenAI Auto..." 
+                            rows="1"></textarea>
+                        <div class="flex items-center px-2 pb-1 gap-1">
+                            <button type="button" class="p-2 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-xl">photo_camera</span>
+                            </button>
+                            <button type="button" class="p-2 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-xl">attach_file</span>
+                            </button>
+                            <button type="button" class="p-2 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-xl">mic</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="size-12 bg-primary text-white rounded-lg flex items-center justify-center shadow-lg shadow-primary/20 hover:bg-blue-700 transition-colors mb-2 mr-2">
+                        <span class="material-symbols-outlined">arrow_upward</span>
+                    </button>
+                </form>
+            </div>
+            <!-- iOS Home Indicator Spacing -->
+            <div class="h-4"></div>
+        </div>
+    </footer>
+
+    <script>
+        // Handle form submission - redirect to chat with message
+        document.getElementById('homeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = document.getElementById('homeInput').value.trim();
+            if (message) {
+                window.location.href = `chat.html?q=${encodeURIComponent(message)}`;
+            }
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('homeInput');
+        textarea.addEventListener('input', function() {
+            this.style.height = '48px';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    </script>
+</body>
+</html>
