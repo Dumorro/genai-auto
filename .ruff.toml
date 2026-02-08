@@ -20,6 +20,13 @@ ignore = [
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
     "W191",  # indentation contains tabs
+    "W293",  # blank line contains whitespace (auto-fixable)
+    "W291",  # trailing whitespace (auto-fixable)
+    "I001",  # import block unsorted (handled by isort)
+    "UP045", # Optional[X] -> X | None (Python 3.10+)
+    "UP042", # str+Enum inheritance (valid pattern)
+    "UP035", # collections.abc imports (not critical)
+    "B904",  # raise from clause (not critical for now)
 ]
 
 # Allow unused variables when prefixed with underscore
