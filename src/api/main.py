@@ -1,9 +1,12 @@
 """FastAPI application entry point."""
 
 import structlog
+from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from src.api.config import get_settings
 from src.api.routes import auth, chat, health, documents, metrics as metrics_routes, evaluation, websocket
@@ -73,18 +76,38 @@ app.include_router(evaluation.router, prefix="/api/v1", tags=["Evaluation"])
 app.include_router(websocket.router)  # No prefix for WebSocket
 
 
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {
-        "name": "GenAI Auto API",
-        "version": "1.0.0",
-        "description": "Multi-agent AI system for automotive customer service",
-        "docs": "/docs",
-        "features": {
-            "authentication": "JWT (built-in)",
-            "caching": settings.cache_enabled,
-            "pii_protection": settings.mask_pii,
-            "human_handoff": bool(settings.human_support_webhook),
-        },
-    }
+# Serve frontend static files
+FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+if FRONTEND_DIR.exists():
+    # Serve index.html at root
+    @app.get("/")
+    async def serve_home():
+        """Serve the frontend home page."""
+        return FileResponse(FRONTEND_DIR / "index.html")
+    
+    # Serve chat.html
+    @app.get("/chat")
+    async def serve_chat():
+        """Serve the chat page."""
+        return FileResponse(FRONTEND_DIR / "chat.html")
+    
+    # Mount static files (for any additional assets)
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+else:
+    # Fallback if frontend not found
+    @app.get("/")
+    async def root():
+        """API root endpoint."""
+        return {
+            "name": "GenAI Auto API",
+            "version": "1.0.0",
+            "description": "Multi-agent AI system for automotive customer service",
+            "docs": "/docs",
+            "frontend": "Not found (run from project root or mount /frontend)",
+            "features": {
+                "authentication": "JWT (built-in)",
+                "caching": settings.cache_enabled,
+                "pii_protection": settings.mask_pii,
+                "human_handoff": bool(settings.human_support_webhook),
+            },
+        }
