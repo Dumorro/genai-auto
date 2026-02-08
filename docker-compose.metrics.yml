@@ -16,8 +16,6 @@ services:
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
-    networks:
-      - genai-network
     restart: unless-stopped
 
   prometheus:
@@ -35,8 +33,6 @@ services:
       - '--storage.tsdb.retention.time=15d'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-    networks:
-      - genai-network
     restart: unless-stopped
 
   grafana:
@@ -53,8 +49,6 @@ services:
       - grafana-data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
       - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
-    networks:
-      - genai-network
     depends_on:
       - prometheus
     restart: unless-stopped
@@ -65,5 +59,6 @@ volumes:
   alertmanager-data:
 
 networks:
-  genai-network:
+  default:
+    name: genai-auto-network
     external: true
