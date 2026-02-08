@@ -1,4 +1,5 @@
 """
+import asyncio
 Example chat endpoint with integrated metrics tracking.
 
 This is a REFERENCE implementation showing how to integrate metrics
