@@ -318,6 +318,8 @@
 
         // Finalize response
         function finalizeResponse(response, metadata) {
+            console.log('Finalize response:', { response, metadata, hasCurrentDiv: !!currentResponseDiv });
+            
             if (currentResponseDiv) {
                 currentResponseDiv.textContent = response;
                 

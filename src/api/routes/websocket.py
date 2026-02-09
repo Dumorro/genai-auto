@@ -211,19 +211,63 @@ async def websocket_chat(websocket: WebSocket):
                         "message": "Searching knowledge base..."
                     })
                     
-                    # Run workflow and collect final state
-                    final_state = None
-                    async for chunk in workflow.astream(initial_state):
-                        final_state = chunk
+                    # Run workflow and get final state
+                    final_state = await workflow.ainvoke(initial_state)
+                    
+                    logger.info(
+                        "Workflow completed",
+                        client_id=client_id,
+                        final_state_keys=list(final_state.keys()) if final_state else [],
+                        messages_count=len(final_state.get("messages", [])) if final_state else 0
+                    )
+                    
+                    # Debug: Log final state
+                    logger.info(
+                        "Final state received",
+                        client_id=client_id,
+                        has_messages="messages" in final_state if final_state else False,
+                        message_count=len(final_state.get("messages", [])) if final_state else 0,
+                        all_messages=final_state.get("messages", []) if final_state and "messages" in final_state else []
+                    )
                     
                     # Extract response from final state messages
                     response_text = ""
                     if final_state and "messages" in final_state:
                         # Get last assistant message
-                        for msg in reversed(final_state["messages"]):
+                        messages = final_state["messages"]
+                        logger.info(
+                            "Extracting response from messages",
+                            client_id=client_id,
+                            total_messages=len(messages),
+                            message_roles=[msg.get("role") if isinstance(msg, dict) else type(msg).__name__ for msg in messages]
+                        )
+                        
+                        for msg in reversed(messages):
+                            logger.info(
+                                "Checking message",
+                                client_id=client_id,
+                                msg_type=type(msg).__name__,
+                                msg_dict=msg if isinstance(msg, dict) else str(msg)[:200],
+                                is_dict=isinstance(msg, dict),
+                                role=msg.get("role") if isinstance(msg, dict) else None
+                            )
+                            
                             if isinstance(msg, dict) and msg.get("role") == "assistant":
                                 response_text = msg.get("content", "")
+                                logger.info(
+                                    "Found assistant message",
+                                    client_id=client_id,
+                                    content_length=len(response_text),
+                                    content_preview=response_text[:200] if response_text else "(empty)"
+                                )
                                 break
+                            
+                        logger.info(
+                            "Response extraction complete",
+                            client_id=client_id,
+                            response_found=bool(response_text),
+                            response_length=len(response_text)
+                        )
                     
                     # Send complete message
                     await manager.send_json(client_id, {
