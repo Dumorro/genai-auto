@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **WebSocket Empty Response Bug** (2026-02-09)
+  - Fixed critical bug where chat responses were always empty
+  - Changed from `workflow.astream()` to `workflow.ainvoke()` 
+  - `astream()` returns partial chunks per node; `ainvoke()` returns complete final state
+  - Chat interface now correctly displays AI agent responses
+  - See `BUGFIX_WEBSOCKET_EMPTY_RESPONSE.md` for detailed analysis
+
 ### Added
 - 🎯 **Complete Metrics Implementation - 5 Steps** (2026-02-06)
   
