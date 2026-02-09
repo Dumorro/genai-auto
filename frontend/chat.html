@@ -46,21 +46,30 @@
     <div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl border-x border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark">
         <!-- TopAppBar -->
         <header class="sticky top-0 z-20 flex h-16 w-full items-center justify-between px-4 bg-background-light/80 dark:bg-background-dark/80 ios-blur border-b border-slate-200 dark:border-slate-800">
-            <button onclick="window.location.href='index.html'" class="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <button onclick="window.location.href='/'" class="flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
                 <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">arrow_back</span>
             </button>
             <div class="flex flex-col items-center">
                 <h1 class="text-lg font-bold leading-tight tracking-tight">GenAI Auto</h1>
                 <span id="statusIndicator" class="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Connecting...</span>
             </div>
-            <button onclick="window.location.href='index.html'" class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+            <button onclick="window.location.href='/'" class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
                 <span class="material-symbols-outlined">edit_square</span>
             </button>
         </header>
 
         <!-- Chat Conversation Area -->
         <main id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
-            <!-- Messages will be dynamically added here -->
+            <!-- Welcome message -->
+            <div class="flex items-center justify-center py-8">
+                <div class="text-center max-w-sm">
+                    <div class="mb-4 inline-flex items-center justify-center size-16 bg-primary/10 rounded-2xl">
+                        <span class="material-symbols-outlined text-primary text-4xl font-light">smart_toy</span>
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">Welcome to GenAI Auto</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Ask me anything about your vehicle, schedule service, or get troubleshooting help.</p>
+                </div>
+            </div>
         </main>
 
         <!-- Bottom Input Area -->
@@ -96,11 +105,17 @@
     </div>
 
     <script>
-        // WebSocket connection
-        const WS_URL = 'ws://localhost:8000/ws/chat';
+        // Configuration
+        const API_BASE = window.location.origin;
+        const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const WS_URL = `${WS_PROTOCOL}//${window.location.host}/ws/chat`;
+
+        // State
         let ws = null;
         let isConnected = false;
-        let accumulatedResponse = '';
+        let isAuthenticated = false;
+        let accessToken = null;
+        let currentResponseDiv = null;
 
         // Elements
         const chatMessages = document.getElementById('chatMessages');
@@ -109,64 +124,138 @@
         const sendButton = document.getElementById('sendButton');
         const statusIndicator = document.getElementById('statusIndicator');
 
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Try to get existing token
+            accessToken = localStorage.getItem('access_token');
+            
+            if (!accessToken) {
+                // Auto-register guest user
+                await registerGuestUser();
+            }
+            
+            // Connect to WebSocket
+            connectWebSocket();
+            
+            // Handle initial query from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialQuery = urlParams.get('q');
+            if (initialQuery) {
+                chatInput.value = initialQuery;
+                // Wait for connection then send
+                setTimeout(() => {
+                    if (isConnected && isAuthenticated) {
+                        sendMessage(initialQuery);
+                        chatInput.value = '';
+                    }
+                }, 1000);
+            }
+        });
+
+        // Register guest user
+        async function registerGuestUser() {
+            try {
+                const guestEmail = `guest_${Date.now()}@genai-auto.demo`;
+                const guestPassword = 'Demo123!@#';
+                
+                const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: guestEmail,
+                        password: guestPassword,
+                        name: 'Guest User'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    accessToken = data.access_token;
+                    localStorage.setItem('access_token', accessToken);
+                    console.log('✅ Guest user registered');
+                } else {
+                    console.error('❌ Failed to register guest user');
+                }
+            } catch (error) {
+                console.error('❌ Registration error:', error);
+            }
+        }
+
         // Connect to WebSocket
         function connectWebSocket() {
+            if (!accessToken) {
+                setTimeout(connectWebSocket, 1000);
+                return;
+            }
+
             ws = new WebSocket(WS_URL);
 
             ws.onopen = () => {
-                console.log('✅ Connected to WebSocket');
+                console.log('✅ WebSocket connected');
                 isConnected = true;
-                statusIndicator.textContent = 'Online';
-                statusIndicator.classList.remove('text-slate-400', 'text-red-500');
-                statusIndicator.classList.add('text-emerald-500');
-
-                // Send initial message from URL param if exists
-                const urlParams = new URLSearchParams(window.location.search);
-                const initialQuery = urlParams.get('q');
-                if (initialQuery) {
-                    setTimeout(() => sendMessage(initialQuery), 500);
-                }
+                updateStatus('Authenticating...');
+                
+                // Send authentication
+                ws.send(JSON.stringify({
+                    type: 'auth',
+                    token: accessToken
+                }));
             };
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                handleMessage(data);
+                handleWebSocketMessage(data);
             };
 
             ws.onclose = () => {
-                console.log('❌ Disconnected from WebSocket');
+                console.log('❌ WebSocket disconnected');
                 isConnected = false;
-                statusIndicator.textContent = 'Offline';
-                statusIndicator.classList.remove('text-emerald-500', 'text-slate-400');
-                statusIndicator.classList.add('text-red-500');
-
+                isAuthenticated = false;
+                updateStatus('Disconnected', 'error');
+                
                 // Retry connection after 3 seconds
                 setTimeout(connectWebSocket, 3000);
             };
 
             ws.onerror = (error) => {
                 console.error('WebSocket error:', error);
-                statusIndicator.textContent = 'Error';
-                statusIndicator.classList.remove('text-emerald-500', 'text-slate-400');
-                statusIndicator.classList.add('text-red-500');
+                updateStatus('Error', 'error');
             };
         }
 
-        // Handle incoming messages
-        function handleMessage(data) {
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            console.log('WebSocket message:', data.type);
+            
             switch (data.type) {
+                case 'auth_success':
+                    isAuthenticated = true;
+                    updateStatus('Online', 'success');
+                    console.log('✅ Authenticated:', data.user);
+                    break;
+
+                case 'auth_error':
+                    isAuthenticated = false;
+                    updateStatus('Auth Failed', 'error');
+                    console.error('❌ Auth failed:', data.message);
+                    // Try to re-register
+                    localStorage.removeItem('access_token');
+                    accessToken = null;
+                    registerGuestUser().then(() => {
+                        setTimeout(connectWebSocket, 1000);
+                    });
+                    break;
+
                 case 'progress':
                     updateTypingIndicator(data.message);
                     break;
 
                 case 'token':
-                    accumulatedResponse += data.token;
-                    updateStreamingMessage(accumulatedResponse);
+                    appendToken(data.token);
                     break;
 
                 case 'complete':
-                    finalizeAIMessage(data.response, data.metadata);
-                    accumulatedResponse = '';
+                    finalizeResponse(data.response, data.metadata);
                     removeTypingIndicator();
                     break;
 
@@ -179,25 +268,27 @@
 
         // Send message
         function sendMessage(message) {
-            if (!message.trim()) return;
+            if (!message) message = chatInput.value.trim();
+            if (!message) return;
+
+            if (!isConnected || !isAuthenticated) {
+                addErrorMessage('Not connected. Reconnecting...');
+                return;
+            }
 
             // Add user message to UI
             addUserMessage(message);
 
-            // Send via WebSocket (no auth required as per spec)
-            if (ws && isConnected) {
-                ws.send(JSON.stringify({
-                    type: 'message',
-                    message: message,
-                    session_id: `web-${Date.now()}`
-                }));
+            // Send via WebSocket
+            ws.send(JSON.stringify({
+                type: 'message',
+                message: message,
+                session_id: `web-${Date.now()}`
+            }));
 
-                // Show typing indicator
-                addTypingIndicator();
-            } else {
-                addErrorMessage('Not connected to server. Reconnecting...');
-                connectWebSocket();
-            }
+            // Show typing indicator
+            addTypingIndicator();
+            chatInput.value = '';
         }
 
         // Add user message
@@ -208,7 +299,7 @@
                     <div class="flex flex-col gap-1 max-w-[85%] items-end">
                         <span class="text-xs font-medium text-slate-500 mr-1">You • ${now}</span>
                         <div class="rounded-2xl rounded-tr-none bg-primary p-4 shadow-md">
-                            <p class="text-[15px] leading-relaxed text-white">${escapeHtml(text)}</p>
+                            <p class="text-[15px] leading-relaxed text-white whitespace-pre-wrap">${escapeHtml(text)}</p>
                         </div>
                     </div>
                     <div class="flex-shrink-0">
@@ -222,7 +313,7 @@
             scrollToBottom();
         }
 
-        // Add AI typing indicator
+        // Add typing indicator
         function addTypingIndicator() {
             const typingHTML = `
                 <div id="typingIndicator" class="flex items-start gap-3">
@@ -242,15 +333,13 @@
             scrollToBottom();
         }
 
-        // Update typing indicator with progress message
+        // Update typing indicator
         function updateTypingIndicator(message) {
             const indicator = document.getElementById('typingIndicator');
             if (indicator) {
-                const progressText = indicator.querySelector('.p-3');
-                if (progressText) {
-                    progressText.innerHTML = `<span class="text-xs text-slate-500">${escapeHtml(message)}</span>`;
-                    progressText.classList.remove('w-16');
-                    progressText.classList.add('min-w-fit');
+                const dotsDiv = indicator.querySelector('.p-3');
+                if (dotsDiv) {
+                    dotsDiv.innerHTML = `<span class="text-xs text-slate-500">${escapeHtml(message)}</span>`;
                 }
             }
         }
@@ -261,16 +350,15 @@
             if (indicator) {
                 indicator.remove();
             }
+            currentResponseDiv = null;
         }
 
-        // Update streaming AI message
-        function updateStreamingMessage(text) {
-            let streamingMsg = document.getElementById('streamingMessage');
-            
-            if (!streamingMsg) {
+        // Append token (streaming)
+        function appendToken(token) {
+            if (!currentResponseDiv) {
                 const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                const messageHTML = `
-                    <div id="streamingMessage" class="flex items-start gap-3">
+                const aiHTML = `
+                    <div id="streamingResponse" class="flex items-start gap-3">
                         <div class="flex-shrink-0">
                             <div class="size-9 rounded-lg bg-gradient-to-br from-primary to-indigo-400 flex items-center justify-center shadow-lg">
                                 <span class="material-symbols-outlined text-white text-sm">smart_toy</span>
@@ -278,112 +366,120 @@
                         </div>
                         <div class="flex flex-col gap-1 max-w-[85%]">
                             <span class="text-xs font-medium text-slate-500 ml-1">GenAI Auto • ${now}</span>
-                            <div class="rounded-2xl rounded-tl-none bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
-                                <p class="text-[15px] leading-relaxed streaming-text"></p>
+                            <div class="rounded-2xl rounded-tl-none bg-white dark:bg-slate-800 p-4 shadow-md border border-slate-100 dark:border-slate-700">
+                                <p class="text-[15px] leading-relaxed text-slate-900 dark:text-white whitespace-pre-wrap"></p>
                             </div>
                         </div>
                     </div>
                 `;
-                // Replace typing indicator with streaming message
+                
+                // Remove typing indicator if it exists
                 removeTypingIndicator();
-                chatMessages.insertAdjacentHTML('beforeend', messageHTML);
-                streamingMsg = document.getElementById('streamingMessage');
+                
+                chatMessages.insertAdjacentHTML('beforeend', aiHTML);
+                currentResponseDiv = document.getElementById('streamingResponse').querySelector('p');
             }
-
-            const textElement = streamingMsg.querySelector('.streaming-text');
-            if (textElement) {
-                textElement.textContent = text;
-            }
-            scrollToBottom();
-        }
-
-        // Finalize AI message
-        function finalizeAIMessage(text, metadata) {
-            let streamingMsg = document.getElementById('streamingMessage');
             
-            if (streamingMsg) {
-                streamingMsg.removeAttribute('id');
-                const textElement = streamingMsg.querySelector('.streaming-text');
-                if (textElement) {
-                    textElement.textContent = text;
-                    textElement.classList.remove('streaming-text');
-                }
-
-                // Add action buttons
-                const messageContainer = streamingMsg.querySelector('.flex.flex-col');
-                const actionsHTML = `
-                    <div class="flex gap-2 mt-2">
-                        <button class="flex items-center gap-1 rounded-full px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[11px] font-medium text-slate-500 hover:text-primary transition-colors border border-slate-200 dark:border-slate-700">
-                            <span class="material-symbols-outlined text-sm">thumb_up</span>
-                            Helpful
-                        </button>
-                        <button onclick="copyToClipboard(this)" class="flex items-center gap-1 rounded-full px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[11px] font-medium text-slate-500 hover:text-primary transition-colors border border-slate-200 dark:border-slate-700">
-                            <span class="material-symbols-outlined text-sm">content_copy</span>
-                            Copy
-                        </button>
-                    </div>
-                `;
-                messageContainer.insertAdjacentHTML('beforeend', actionsHTML);
-            }
+            currentResponseDiv.textContent += token;
             scrollToBottom();
         }
 
-        // Add error message
-        function addErrorMessage(error) {
+        // Finalize response
+        function finalizeResponse(response, metadata) {
+            if (currentResponseDiv) {
+                currentResponseDiv.textContent = response;
+                
+                // Add agent badge
+                if (metadata && metadata.agent) {
+                    const badge = document.createElement('span');
+                    badge.className = 'inline-block mt-2 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded';
+                    badge.textContent = `Agent: ${metadata.agent}`;
+                    currentResponseDiv.parentElement.appendChild(badge);
+                }
+            } else {
+                // No streaming happened, add complete message
+                addAIMessage(response, metadata);
+            }
+            
+            currentResponseDiv = null;
+            scrollToBottom();
+        }
+
+        // Add AI message (non-streaming)
+        function addAIMessage(text, metadata) {
+            const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const agentBadge = metadata && metadata.agent ? 
+                `<span class="inline-block mt-2 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">Agent: ${metadata.agent}</span>` : '';
+            
             const messageHTML = `
-                <div class="flex items-center justify-center gap-2 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                    <span class="material-symbols-outlined text-lg">error</span>
-                    <span>${escapeHtml(error)}</span>
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <div class="size-9 rounded-lg bg-gradient-to-br from-primary to-indigo-400 flex items-center justify-center shadow-lg">
+                            <span class="material-symbols-outlined text-white text-sm">smart_toy</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1 max-w-[85%]">
+                        <span class="text-xs font-medium text-slate-500 ml-1">GenAI Auto • ${now}</span>
+                        <div class="rounded-2xl rounded-tl-none bg-white dark:bg-slate-800 p-4 shadow-md border border-slate-100 dark:border-slate-700">
+                            <p class="text-[15px] leading-relaxed text-slate-900 dark:text-white whitespace-pre-wrap">${escapeHtml(text)}</p>
+                            ${agentBadge}
+                        </div>
+                    </div>
                 </div>
             `;
             chatMessages.insertAdjacentHTML('beforeend', messageHTML);
             scrollToBottom();
         }
 
-        // Copy to clipboard
-        function copyToClipboard(button) {
-            const messageContainer = button.closest('.flex.flex-col');
-            const textElement = messageContainer.querySelector('p');
-            if (textElement) {
-                navigator.clipboard.writeText(textElement.textContent);
-                button.querySelector('span:last-child').textContent = 'Copied!';
-                setTimeout(() => {
-                    button.querySelector('span:last-child').textContent = 'Copy';
-                }, 2000);
+        // Add error message
+        function addErrorMessage(error) {
+            const messageHTML = `
+                <div class="flex items-center justify-center">
+                    <div class="px-4 py-2 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p class="text-sm text-red-600 dark:text-red-400">${escapeHtml(error)}</p>
+                    </div>
+                </div>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', messageHTML);
+            scrollToBottom();
+        }
+
+        // Update status indicator
+        function updateStatus(text, type = 'normal') {
+            statusIndicator.textContent = text;
+            statusIndicator.classList.remove('text-slate-400', 'text-emerald-500', 'text-red-500');
+            
+            if (type === 'success') {
+                statusIndicator.classList.add('text-emerald-500');
+            } else if (type === 'error') {
+                statusIndicator.classList.add('text-red-500');
+            } else {
+                statusIndicator.classList.add('text-slate-400');
             }
         }
 
-        // Utility: Escape HTML
+        // Utility functions
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Scroll to bottom
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Form submission
-        chatForm.addEventListener('submit', function(e) {
+        chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const message = chatInput.value.trim();
-            if (message) {
-                sendMessage(message);
-                chatInput.value = '';
-                chatInput.style.height = '44px';
-            }
+            sendMessage();
         });
 
         // Auto-resize textarea
         chatInput.addEventListener('input', function() {
             this.style.height = '44px';
-            this.style.height = this.scrollHeight + 'px';
+            this.style.height = Math.min(this.scrollHeight, 128) + 'px';
         });
-
-        // Initialize
-        connectWebSocket();
     </script>
 </body>
 </html>
