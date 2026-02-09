@@ -188,15 +188,13 @@ async def websocket_chat(websocket: WebSocket):
                     
                     # Initialize state
                     initial_state: AgentState = {
-                        "messages": [user_message],
-                        "customer_query": user_message,
-                        "session_id": session_id,
+                        "messages": [{"role": "user", "content": user_message}],
+                        "session_id": session_id or f"session-{client_id}",
                         "customer_id": customer_id,
-                        "classified_intent": None,
-                        "confidence": 0.0,
-                        "context": {},
-                        "agent_responses": {},
-                        "final_response": "",
+                        "vehicle_id": None,
+                        "metadata": {},
+                        "current_agent": None,
+                        "context": {}
                     }
                     
                     # Send progress: RAG retrieval
@@ -206,49 +204,37 @@ async def websocket_chat(websocket: WebSocket):
                         "message": "Searching knowledge base..."
                     })
                     
-                    # Stream response
-                    accumulated_response = ""
-                    
-                    # Run workflow with streaming
+                    # Run workflow and collect final state
+                    final_state = None
                     async for chunk in workflow.astream(initial_state):
-                        # Extract agent response from chunk
-                        if "agent_responses" in chunk:
-                            for agent_name, response in chunk["agent_responses"].items():
-                                if response and response != accumulated_response:
-                                    # Send new tokens
-                                    new_tokens = response[len(accumulated_response):]
-                                    accumulated_response = response
-                                    
-                                    await manager.send_json(client_id, {
-                                        "type": "token",
-                                        "token": new_tokens,
-                                        "partial_response": accumulated_response
-                                    })
-                        
-                        # Check for final response
-                        if "final_response" in chunk and chunk["final_response"]:
-                            accumulated_response = chunk["final_response"]
+                        final_state = chunk
                     
-                    # If no streaming happened, send complete response
-                    if not accumulated_response and "final_response" in chunk:
-                        accumulated_response = chunk["final_response"]
+                    # Extract response from final state messages
+                    response_text = ""
+                    if final_state and "messages" in final_state:
+                        # Get last assistant message
+                        for msg in reversed(final_state["messages"]):
+                            if isinstance(msg, dict) and msg.get("role") == "assistant":
+                                response_text = msg.get("content", "")
+                                break
                     
                     # Send complete message
                     await manager.send_json(client_id, {
                         "type": "complete",
-                        "response": accumulated_response,
-                        "session_id": chunk.get("session_id"),
+                        "response": response_text,
+                        "session_id": final_state.get("session_id") if final_state else session_id,
                         "metadata": {
-                            "agent": chunk.get("classified_intent"),
-                            "confidence": chunk.get("confidence", 0.0),
-                            "context": chunk.get("context", {})
+                            "agent": final_state.get("current_agent") if final_state else None,
+                            "confidence": final_state.get("context", {}).get("confidence", 0.0) if final_state else 0.0,
+                            "context": final_state.get("context", {}) if final_state else {}
                         }
                     })
                     
                     logger.info(
                         "WebSocket response sent",
                         client_id=client_id,
-                        response_length=len(accumulated_response)
+                        response_length=len(response_text),
+                        agent=final_state.get("current_agent") if final_state else None
                     )
                 
                 except Exception as e:
