@@ -11,6 +11,7 @@ Multi-agent AI system for automotive customer service - designed for vehicle man
 **Key Features:**
 - 🤖 Multi-agent architecture (Specs, Maintenance, Troubleshoot)
 - 📚 RAG pipeline with pgvector
+- 💬 Real-time WebSocket chat with streaming responses
 - 📊 Production-ready metrics (Prometheus + Grafana)
 - 🔐 JWT authentication
 - ⚡ Redis caching
@@ -60,6 +61,14 @@ Multi-agent AI system for automotive customer service - designed for vehicle man
 - **Connection Pooling**: Optimized database connections
 - **Async Everywhere**: Full async/await support
 - **Human Handoff**: Automatic escalation when confidence < 70%
+
+### 💬 Real-Time Chat Interface
+- **WebSocket Streaming**: Live bi-directional communication
+- **Progress Updates**: Real-time feedback on RAG retrieval, agent routing, generation
+- **Mobile-First UI**: Responsive design with iOS-style blur effects
+- **Smart Message Rendering**: Streaming token display with typing indicators
+- **Agent Attribution**: Shows which specialist handled each request
+- **No Authentication Required**: PoC-ready for immediate testing
 
 ## Stack
 
@@ -149,6 +158,26 @@ docker-compose -f docker-compose.yml -f docker-compose.metrics.yml up -d
 docker-compose exec api python scripts/seed_knowledge_base.py
 ```
 
+### 4. Access the Chat Interface
+
+**Web UI (Recommended):**
+```
+http://localhost:8000/chat
+```
+
+**Features:**
+- Real-time WebSocket streaming
+- Mobile-responsive design
+- Progress indicators (RAG retrieval, agent routing)
+- Agent attribution badges
+- No authentication required (PoC mode)
+
+**Test Page:**
+```
+http://localhost:8000/ws/test
+```
+Simple test interface for debugging WebSocket connections.
+
 ### 4. Access the services
 
 **Core:**
@@ -181,12 +210,36 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 
 ### Chat
 
+**REST API (with auth):**
 ```bash
 curl -X POST http://localhost:8000/api/v1/chat \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"message": "What is the engine power of the GenAuto X1?"}'
 ```
+
+**WebSocket (real-time, no auth):**
+```javascript
+// Connect to WebSocket
+const ws = new WebSocket('ws://localhost:8000/ws/chat');
+
+// Send message
+ws.send(JSON.stringify({
+  type: 'message',
+  message: 'What are the specs of a Honda Civic 2024?',
+  session_id: 'my-session-123'
+}));
+
+// Receive messages
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  // data.type: 'progress' | 'token' | 'complete' | 'error'
+};
+```
+
+**Access Web UI:**
+- Main chat: `http://localhost:8000/chat`
+- Test page: `http://localhost:8000/ws/test`
 
 ### Metrics & Feedback
 
@@ -505,9 +558,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [x] ✅ **Alertmanager** (multi-channel notifications, 25+ alerts)
 - [x] ✅ **A/B testing framework** (experiment management, statistical significance)
 - [x] ✅ **ML observability** (drift detection, baseline comparison, automated reports)
+- [x] ✅ **WebSocket real-time chat** (streaming responses, progress updates, mobile-first UI)
 
 ### Planned 🔜
-- [ ] WebSocket support for real-time chat streaming
 - [ ] Multi-language support (i18n)
 - [ ] Voice input/output integration
 - [ ] Plugin system for custom agents

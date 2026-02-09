@@ -9,11 +9,14 @@ GenAI Auto is a multi-agent AI system designed for automotive customer service. 
 ```mermaid
 graph TB
     subgraph FRONTEND["🖥️ FRONTEND LAYER"]
-        UI["Chat UI (Web/Mobile)<br/>- Real-time messaging<br/>- Session management<br/>- Response streaming"]
+        UI["Chat UI (Web/Mobile)<br/>- WebSocket real-time streaming<br/>- Progress indicators<br/>- Mobile-first design<br/>- Session management<br/>- Token streaming display"]
     end
     
     subgraph API["🔐 API GATEWAY"]
-        FastAPI["FastAPI Application<br/>- Authentication & Authorization<br/>- Rate Limiting<br/>- Request Validation<br/>- Response Formatting"]
+        FastAPI["FastAPI Application<br/>- WebSocket /ws/chat endpoint<br/>- REST API /api/v1/*<br/>- Authentication & Authorization<br/>- Rate Limiting<br/>- Request Validation<br/>- Response Formatting"]
+        WSManager["WebSocket Manager<br/>- Connection pooling<br/>- Client tracking<br/>- Event broadcasting<br/>- Progress notifications"]
+        
+        FastAPI --> WSManager
     end
     
     subgraph ORCHESTRATOR["🤖 ORCHESTRATOR (LangGraph)"]
@@ -99,14 +102,62 @@ graph TB
 
 ## Data Flow
 
-### Chat Request Flow
+### WebSocket Chat Flow (Real-Time)
+
+**Connection Establishment:**
+1. Client connects to `ws://localhost:8000/ws/chat`
+2. Server accepts and assigns unique client ID
+3. Connection stored in active connections pool
+
+**Message Processing:**
+1. **User Input** → Client sends JSON message via WebSocket
+   ```json
+   {
+     "type": "message",
+     "message": "What are the specs of Honda Civic 2024?",
+     "session_id": "session-123"
+   }
+   ```
+
+2. **Progress Updates** → Server sends real-time progress events
+   - `{"type": "progress", "step": "starting", "message": "Processing..."}`
+   - `{"type": "progress", "step": "agent_routing", "message": "Routing to expert..."}`
+   - `{"type": "progress", "step": "rag_retrieval", "message": "Searching knowledge base..."}`
+
+3. **Orchestrator** → LangGraph workflow processes request
+   - Classifies intent (SPECS/MAINTENANCE/TROUBLESHOOT)
+   - Routes to appropriate agent
+   - Agent executes (RAG search, tool calls, diagnostics)
+   - Generates response using LLM
+
+4. **Response Delivery** → Complete response sent to client
+   ```json
+   {
+     "type": "complete",
+     "response": "The 2024 Honda Civic features...",
+     "session_id": "session-123",
+     "metadata": {
+       "agent": "specs",
+       "confidence": 0.95,
+       "context": {}
+     }
+   }
+   ```
+
+**Key Implementation Details:**
+- Uses `workflow.ainvoke()` for complete final state (not `astream()` partial chunks)
+- Async processing throughout the entire pipeline
+- Connection manager tracks all active WebSocket clients
+- Error handling with graceful degradation
+
+### REST Chat Request Flow (Legacy)
 
 1. **User Input** → Frontend captures user message
 2. **API Gateway** → Validates, authenticates, rate limits
 3. **Orchestrator** → Classifies intent, routes to agent
 4. **Agent Processing** → Retrieves context, generates response
 5. **Storage** → Logs conversation, updates state
-6. **Response** → Streams back through API to frontend
+6. **Response** → Returns JSON response
 
 ### Document Ingestion Flow
 
@@ -147,3 +198,84 @@ graph TB
 - Connection pooling for database
 - Horizontal scaling with container orchestration
 - Async processing throughout
+- WebSocket connection pooling for real-time chat
+
+## WebSocket Protocol Specification
+
+### Endpoint
+- **URL**: `ws://localhost:8000/ws/chat`
+- **Protocol**: WebSocket (RFC 6455)
+- **Authentication**: None (PoC mode) - can be added via query params or initial message
+
+### Client → Server Messages
+
+**Chat Message:**
+```json
+{
+  "type": "message",
+  "message": "Your question here",
+  "session_id": "optional-session-id",
+  "customer_id": "optional-customer-id"
+}
+```
+
+### Server → Client Messages
+
+**Progress Update:**
+```json
+{
+  "type": "progress",
+  "step": "starting" | "agent_routing" | "rag_retrieval" | "generating",
+  "message": "Human-readable progress message"
+}
+```
+
+**Streaming Token (deprecated, not currently used):**
+```json
+{
+  "type": "token",
+  "token": "word or phrase",
+  "partial_response": "accumulated response so far"
+}
+```
+
+**Complete Response:**
+```json
+{
+  "type": "complete",
+  "response": "Full response text",
+  "session_id": "session-id",
+  "metadata": {
+    "agent": "specs" | "maintenance" | "troubleshoot",
+    "confidence": 0.95,
+    "context": {}
+  }
+}
+```
+
+**Error:**
+```json
+{
+  "type": "error",
+  "error": "Error message",
+  "code": "ERROR_CODE"
+}
+```
+
+### Connection Management
+
+**ConnectionManager Class:**
+- Tracks active connections by client ID
+- Provides methods: `connect()`, `disconnect()`, `send_json()`, `send_text()`
+- Singleton pattern for global state management
+
+**Client ID Generation:**
+- Format: `ws_{timestamp}`
+- Example: `ws_1707489123.456`
+
+### Error Handling
+
+- Empty message → `EMPTY_MESSAGE` error code
+- Processing errors → `PROCESSING_ERROR` with exception details
+- Connection errors → automatic reconnection on client side
+- Graceful degradation with informative error messages
