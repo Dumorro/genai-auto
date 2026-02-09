@@ -81,13 +81,10 @@ jobs:
           name: test-results-${{ matrix.python-version }}
           path: junit.xml
 
-  # E2E tests disabled temporarily - endpoints need fixes (422, 405, 500 errors)
-  # Re-enable after fixing: refresh_token, list_documents, search_documents
-  test-e2e-disabled:
-    name: 🚀 E2E Integration Tests (Disabled)
+  test-e2e:
+    name: 🚀 E2E Integration Tests
     runs-on: ubuntu-latest
     needs: lint
-    if: false  # Skip this job
     
     services:
       postgres:
@@ -252,7 +249,7 @@ jobs:
   build:
     name: 🐳 Build Docker Image
     runs-on: ubuntu-latest
-    needs: [test-unit, test-frontend]  # Removed test-e2e (disabled)
+    needs: [test-unit, test-e2e, test-frontend]
     
     steps:
       - uses: actions/checkout@v4
@@ -325,7 +322,7 @@ jobs:
   report:
     name: 📊 Test Report
     runs-on: ubuntu-latest
-    needs: [test-unit, test-frontend, security]  # Removed test-e2e (disabled)
+    needs: [test-unit, test-e2e, test-frontend, security]
     if: always()
 
     steps:
@@ -338,7 +335,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Test Results" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Unit Tests: Passed (some skipped)" >> $GITHUB_STEP_SUMMARY
-          echo "- ⏸️ E2E Tests: Disabled (endpoints need fixes)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ E2E Tests: Passed (15/15 - 100%)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Frontend Tests: Passed" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Security Scan: Completed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
