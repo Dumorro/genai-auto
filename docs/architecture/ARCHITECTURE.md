@@ -63,11 +63,11 @@ graph TB
     end
     
     subgraph STORAGE["💾 STORAGE LAYER"]
-        Vector[("PostgreSQL + pgvector<br/>(Vector Store)<br/>- Document embeddings<br/>- Semantic search index<br/>- Metadata storage<br/>Index: IVFFlat<br/>Dimensions: 1536")]
+        Vector[("PostgreSQL + pgvector<br/>(Vector Store)<br/>- Document embeddings<br/>- Semantic search index<br/>- Metadata storage<br/>Index: IVFFlat<br/>Dimensions: 768 (default)")]
         SQL[("SQL Database<br/>(Customer Data)<br/>- Customer profiles<br/>- Vehicle information<br/>- Service history<br/>- Appointments<br/>- Conversations")]
     end
     
-    UI -->|REST/WebSocket<br/>TLS 1.3, OAuth 2.0| FastAPI
+    UI -->|REST/WebSocket<br/>HTTP, JWT Auth| FastAPI
     FastAPI --> StateMachine
     StateMachine --> Intent
     
@@ -186,11 +186,12 @@ graph TB
 
 ## Security
 
-- TLS 1.3 for all communications
-- OAuth 2.0 authentication
+- JWT authentication (HS256 algorithm, Argon2 password hashing)
+- PII masking in logs (SSN, VIN, email, phone, credit cards)
+- Input validation (Pydantic schema enforcement)
 - Rate limiting per user/IP
-- Input validation and sanitization
-- Secure secrets management
+- Secure secrets management via environment variables
+- Note: TLS should be handled at reverse proxy level (Nginx/Traefik) in production
 
 ## Scalability
 

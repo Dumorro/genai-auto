@@ -85,8 +85,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-dev.txt  # If available
+pip install -r requirements.txt  # Includes dev dependencies (pytest, black, ruff, mypy)
 
 # Copy environment template
 cp .env.example .env

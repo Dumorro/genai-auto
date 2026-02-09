@@ -8,6 +8,8 @@
 
 Multi-agent AI system for automotive customer service - designed for vehicle manufacturers.
 
+> **This is a Proof of Concept (PoC)** demonstrating how multi-agent AI, RAG, and real-time chat can work together for automotive customer service. It includes production-grade patterns (metrics, alerting, A/B testing, ML observability) built on free-tier LLMs via OpenRouter. See [Known PoC Limitations](docs/SECURITY.md#known-poc-limitations) for what would need hardening before production use.
+
 **Key Features:**
 - 🤖 Multi-agent architecture (Specs, Maintenance, Troubleshoot)
 - 📚 RAG pipeline with pgvector
@@ -178,7 +180,7 @@ http://localhost:8000/ws/test
 ```
 Simple test interface for debugging WebSocket connections.
 
-### 4. Access the services
+### 5. Access the services
 
 **Core:**
 - **API**: http://localhost:8000
@@ -405,41 +407,58 @@ MASK_PII=true
 genai-auto/
 ├── src/
 │   ├── api/                        # FastAPI application
-│   │   ├── auth/                   # JWT authentication
+│   │   ├── main.py                 # App entry point, middleware, routers
+│   │   ├── config.py               # Pydantic settings (env vars)
+│   │   ├── auth/                   # JWT authentication (Argon2)
 │   │   ├── routes/                 # API endpoints
-│   │   │   ├── chat_example.py     # Chat with metrics integration
-│   │   │   └── metrics_routes.py   # Metrics & feedback endpoints
+│   │   │   ├── auth.py             # Register, login, refresh, me
+│   │   │   ├── chat.py             # Chat endpoint
+│   │   │   ├── documents.py        # Document upload, search, manage
+│   │   │   ├── health.py           # Health checks
+│   │   │   ├── metrics_routes.py   # Prometheus metrics & feedback
+│   │   │   ├── evaluation.py       # RAG evaluation endpoints
+│   │   │   └── websocket.py        # WebSocket real-time chat
 │   │   ├── cache.py                # Redis caching
-│   │   ├── handoff.py              # Human handoff
-│   │   ├── metrics.py              # ✨ Prometheus metrics tracking
-│   │   ├── observability.py        # Tracing & metrics
-│   │   └── pii.py                  # PII protection
-│   ├── agents/                     # LangGraph agents
-│   │   ├── specs/                  # RAG + documentation
-│   │   ├── maintenance/            # Scheduling
-│   │   └── troubleshoot/           # Diagnostics
+│   │   ├── handoff.py              # Human handoff manager
+│   │   ├── observability.py        # Request tracing middleware
+│   │   └── pii.py                  # PII masking
+│   ├── agents/                     # Specialized AI agents
+│   │   ├── specs/agent.py          # RAG-powered specs agent
+│   │   ├── maintenance/agent.py    # Tool-calling scheduling agent
+│   │   └── troubleshoot/agent.py   # Diagnostic decision trees
 │   ├── orchestrator/               # LangGraph state machine
+│   │   ├── graph.py                # StateGraph workflow
+│   │   ├── agent_router.py         # Routing logic
+│   │   └── session_manager.py      # Session state
 │   ├── rag/                        # RAG pipeline
-│   │   ├── pipeline.py             # Main orchestrator
-│   │   ├── chunker.py              # Document chunking
-│   │   ├── embeddings.py           # Embedding service
-│   │   └── vectorstore.py          # pgvector operations
-│   └── storage/                    # Database models
-├── docs/
-│   ├── architecture/
-│   │   └── ARCHITECTURE.md         # Detailed architecture
-│   └── METRICS.md                  # ✨ Complete metrics guide
-├── scripts/
-│   ├── seed_knowledge_base.py      # Populate sample data
-│   └── init_postgres.sql           # Database schema
-├── docker-compose.yml              # Main services
-├── docker-compose.metrics.yml      # ✨ Prometheus + Grafana
-├── prometheus.yml                  # ✨ Prometheus config
-├── alerts.yml                      # ✨ Alert rules (15 alerts)
-├── Dockerfile
-└── requirements.txt
-
-✨ = Metrics-related files
+│   │   ├── pipeline.py             # Ingestion orchestrator
+│   │   ├── chunker.py              # Text chunking strategies
+│   │   ├── embeddings.py           # Embedding service + caching
+│   │   ├── vectorstore.py          # pgvector storage and search
+│   │   └── retriever.py            # Context retrieval
+│   ├── storage/                    # Database layer
+│   │   ├── database.py             # SQLAlchemy async engine
+│   │   └── models.py               # ORM models (7 tables)
+│   ├── evaluation/                 # RAG quality evaluation
+│   └── experiments/                # A/B testing framework
+├── tests/                          # Test suite (unit + integration)
+├── migrations/                     # Alembic database migrations
+├── scripts/                        # Utility scripts
+│   ├── seed_knowledge_base.py      # Seed RAG knowledge base
+│   ├── init_db.py                  # Sample customer/vehicle data
+│   ├── run_evaluation.py           # RAG evaluation runner
+│   └── init_postgres.sql           # pgvector extension setup
+├── frontend/                       # Chat UI (HTML/JS)
+├── docs/                           # Documentation (15+ guides)
+├── observability/                  # Grafana dashboards, Prometheus config
+├── docker-compose.yml              # Core services (API, PostgreSQL, Redis)
+├── docker-compose.metrics.yml      # Monitoring (Prometheus, Grafana, Alertmanager)
+├── Dockerfile                      # API container
+├── prometheus.yml                  # Prometheus scrape config
+├── alerts.yml                      # 25+ alert rules
+├── requirements.txt                # Python dependencies
+├── pytest.ini                      # Test configuration
+└── .env.example                    # Environment variable template
 ```
 
 ## Monitoring & Metrics
@@ -536,13 +555,44 @@ pytest tests/ -v
 
 ## Documentation
 
-- **[Architecture Guide](docs/architecture/ARCHITECTURE.md)** - Detailed system architecture
-- **[Metrics Guide](docs/METRICS.md)** - Complete metrics documentation
-- **[API Reference](http://localhost:8000/docs)** - OpenAPI/Swagger docs (when running)
+**[Documentation Index](docs/INDEX.md)** - Complete documentation hub
+
+### Core
+
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/architecture/ARCHITECTURE.md) | System architecture and data flows |
+| [Multi-Agent System](docs/AGENTS.md) | Agent capabilities, orchestration, handoff |
+| [RAG Pipeline](docs/RAG.md) | Ingestion, chunking, embeddings, retrieval |
+| [API Reference](docs/API.md) | Complete REST and WebSocket API docs |
+| [Database Schema](docs/DATABASE.md) | ER diagram, tables, migrations |
+
+### Production Features
+
+| Document | Description |
+|----------|-------------|
+| [Essential Metrics](docs/METRICS.md) | Token usage, cost, latency, errors, feedback |
+| [Advanced Metrics](docs/ADVANCED_METRICS.md) | RAG quality, cache, handoff, routing |
+| [A/B Testing](docs/AB_TESTING.md) | Experiment framework with significance testing |
+| [ML Observability](docs/ML_OBSERVABILITY.md) | Model drift detection and monitoring |
+| [Alerting](docs/ALERTING.md) | Alertmanager with Slack, Email, PagerDuty |
+| [WebSocket Chat](docs/WEBSOCKET.md) | Real-time streaming protocol |
+
+### Operations
+
+| Document | Description |
+|----------|-------------|
+| [Deployment Guide](docs/DEPLOYMENT.md) | Docker, reverse proxy, TLS, scaling |
+| [Security](docs/SECURITY.md) | JWT auth, PII masking, production hardening |
+| [Development Guide](docs/DEVELOPMENT.md) | Local setup, project structure, debugging |
+| [Environment Variables](docs/ENV_VARIABLES.md) | Complete configuration reference |
+| [Testing & Evaluation](docs/EVALUATION.md) | Test suite, CI/CD, RAG quality evaluation |
+
+**Interactive API Docs**: http://localhost:8000/docs (when running)
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -568,7 +618,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-- 📖 **Documentation**: [docs/](docs/)
+- 📖 **Documentation**: [docs/INDEX.md](docs/INDEX.md) - Complete documentation hub
 - 💬 **Issues**: [GitHub Issues](https://github.com/Dumorro/genai-auto/issues)
 - 📧 **Email**: tfcoelho@msn.com
 

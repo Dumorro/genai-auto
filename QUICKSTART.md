@@ -23,7 +23,7 @@ Get up and running in 5 minutes!
 ### 2️⃣ Configure Environment
 
 ```bash
-cd ~/Documents/Repos/genai-auto
+cd genai-auto
 
 # Edit .env file
 nano .env  # or: code .env
@@ -250,7 +250,7 @@ docker-compose restart api
 ### "No such file or directory" Error
 ```bash
 # Ensure you're in project root
-cd ~/Documents/Repos/genai-auto
+cd genai-auto
 
 # Verify .env exists
 ls -la .env
@@ -319,7 +319,7 @@ Before deploying to production:
 
 - **Architecture:** [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
 - **Metrics Guide:** [docs/METRICS.md](docs/METRICS.md)
-- **Bug Fixes:** [BUGFIX_REPORT.md](BUGFIX_REPORT.md)
+- **Bug Fixes:** [BUGFIX_WEBSOCKET_EMPTY_RESPONSE.md](docs/reports/bugfixes/BUGFIX_WEBSOCKET_EMPTY_RESPONSE.md)
 - **API Reference:** http://localhost:8000/docs (when running)
 
 ---

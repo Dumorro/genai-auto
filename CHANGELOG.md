@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No unreleased changes._
+
+## [0.2.0] - 2026-02-09
+
 ### Fixed
 - **WebSocket Empty Response Bug** (2026-02-09)
   - Fixed critical bug where chat responses were always empty
   - Changed from `workflow.astream()` to `workflow.ainvoke()` 
   - `astream()` returns partial chunks per node; `ainvoke()` returns complete final state
   - Chat interface now correctly displays AI agent responses
-  - See `BUGFIX_WEBSOCKET_EMPTY_RESPONSE.md` for detailed analysis
+  - See `docs/reports/bugfixes/BUGFIX_WEBSOCKET_EMPTY_RESPONSE.md` for detailed analysis
 
 ### Added
 - 🎯 **Complete Metrics Implementation - 5 Steps** (2026-02-06)
@@ -126,17 +130,26 @@ First working version with core functionality:
 - Diagnostic troubleshooting
 - Production-ready API
 
-### Upcoming in v0.2.0
-- WebSocket streaming
-- Multi-language support
-- Voice integration
-- Advanced analytics
+### v0.2.0 - Feature Release
+Major feature release with production-ready monitoring, real-time chat, and comprehensive observability:
+- WebSocket real-time chat with streaming responses
+- 10 production metrics (Prometheus + Grafana)
+- 25+ alerting rules with Alertmanager
+- A/B testing framework
+- ML observability with drift detection
+- Comprehensive documentation
+
+### Upcoming in v0.3.0
+- Multi-language support (i18n)
+- Voice input/output integration
+- Plugin system for custom agents
+- Knowledge base versioning
 
 ---
 
 ## Migration Guides
 
-### v0.1.0 → v0.2.0 (upcoming)
+### v0.1.0 → v0.2.0
 
 **New dependencies:**
 ```bash
