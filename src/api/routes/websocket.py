@@ -146,6 +146,13 @@ async def websocket_chat(websocket: WebSocket):
             data = await websocket.receive_json()
             message_type = data.get("type")
             
+            logger.info(
+                "WebSocket data received",
+                client_id=client_id,
+                message_type=message_type,
+                data_keys=list(data.keys())
+            )
+            
             # Handle messages (no authentication required for PoC)
             if message_type == "message":
                 # Extract message data
