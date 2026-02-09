@@ -78,11 +78,16 @@ Respond with only one word: SPECS, MAINTENANCE, or TROUBLESHOOT"""
 
         if intent not in ["SPECS", "MAINTENANCE", "TROUBLESHOOT"]:
             intent = "SPECS"  # Default to specs for general questions
+            confidence = 0.5  # Low confidence for fallback
+        else:
+            confidence = 0.85  # High confidence for successful classification
 
-        logger.info("Intent classified", intent=intent, session_id=state["session_id"])
+        logger.info("Intent classified", intent=intent, confidence=confidence, session_id=state["session_id"])
 
         state["current_agent"] = intent.lower()
         state["context"]["classified_intent"] = intent
+        state["context"]["confidence"] = confidence
+        state["context"]["agent"] = intent.lower()
 
         return state
 

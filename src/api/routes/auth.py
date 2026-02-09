@@ -1,6 +1,7 @@
 """Authentication endpoints."""
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.auth import (
@@ -36,14 +37,19 @@ async def login(
     return await auth_service.login(credentials)
 
 
+class RefreshRequest(BaseModel):
+    """Refresh token request."""
+    refresh_token: str
+
+
 @router.post("/auth/refresh", response_model=TokenResponse)
 async def refresh_token(
-    refresh_token: str,
+    request: RefreshRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Refresh access token."""
     auth_service = AuthService(db)
-    return await auth_service.refresh(refresh_token)
+    return await auth_service.refresh(request.refresh_token)
 
 
 @router.get("/auth/me")

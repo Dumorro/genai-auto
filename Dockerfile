@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 COPY frontend/ ./frontend/
+COPY tests/ ./tests/
 
 # Set Python path
 ENV PYTHONPATH=/app

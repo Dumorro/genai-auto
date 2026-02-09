@@ -8,6 +8,7 @@ from src.api.auth.jwt_auth import (
     UserCreate,
     UserLogin,
     TokenResponse,
+    UserResponse,
     create_tokens,
     decode_token,
 )
@@ -20,6 +21,7 @@ __all__ = [
     "UserCreate",
     "UserLogin",
     "TokenResponse",
+    "UserResponse",
     "create_tokens",
     "decode_token",
 ]

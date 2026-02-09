@@ -218,7 +218,7 @@ async def search_documents(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/documents", response_model=List[DocumentInfo])
+@router.get("/documents/", response_model=dict)
 async def list_documents(
     user: AuthenticatedUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -226,7 +226,7 @@ async def list_documents(
     """List all documents in the knowledge base."""
     pipeline = RAGPipeline(db)
     docs = await pipeline.list_documents()
-    return [DocumentInfo(**doc) for doc in docs]
+    return {"documents": [DocumentInfo(**doc).dict() for doc in docs]}
 
 
 @router.get("/documents/stats", response_model=KnowledgeBaseStats)

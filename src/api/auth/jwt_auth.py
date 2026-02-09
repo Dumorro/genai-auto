@@ -41,12 +41,20 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserResponse(BaseModel):
+    """User data in token response."""
+    id: str
+    email: str
+    name: str
+
+
 class TokenResponse(BaseModel):
     """Token response model."""
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int
+    user: UserResponse
 
 
 class TokenPayload(BaseModel):
@@ -128,6 +136,7 @@ def create_tokens(user_id: str, email: str, name: str) -> TokenResponse:
         access_token=access_token,
         refresh_token=refresh_token,
         expires_in=settings.jwt_access_expire_minutes * 60,
+        user=UserResponse(id=user_id, email=email, name=name),
     )
 
 
