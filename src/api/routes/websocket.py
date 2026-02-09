@@ -89,10 +89,7 @@ async def authenticate_websocket(token: Optional[str]) -> Optional[Authenticated
 
 
 @router.websocket("/ws/chat")
-async def websocket_chat(
-    websocket: WebSocket,
-    db: AsyncSession = Depends(get_db)
-):
+async def websocket_chat(websocket: WebSocket):
     """
     WebSocket endpoint for streaming chat (PoC - No authentication required).
     
@@ -180,7 +177,7 @@ async def websocket_chat(
                     })
                     
                     # Create workflow
-                    workflow = create_workflow(db)
+                    workflow = create_workflow()
                     
                     # Send progress: Agent routing
                     await manager.send_json(client_id, {
