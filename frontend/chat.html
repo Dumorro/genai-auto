@@ -113,8 +113,6 @@
         // State
         let ws = null;
         let isConnected = false;
-        let isAuthenticated = false;
-        let accessToken = null;
         let currentResponseDiv = null;
 
         // Elements
@@ -125,16 +123,8 @@
         const statusIndicator = document.getElementById('statusIndicator');
 
         // Initialize on page load
-        window.addEventListener('DOMContentLoaded', async () => {
-            // Try to get existing token
-            accessToken = localStorage.getItem('access_token');
-            
-            if (!accessToken) {
-                // Auto-register guest user
-                await registerGuestUser();
-            }
-            
-            // Connect to WebSocket
+        window.addEventListener('DOMContentLoaded', () => {
+            // Connect to WebSocket (no auth needed for PoC)
             connectWebSocket();
             
             // Handle initial query from URL
@@ -144,62 +134,22 @@
                 chatInput.value = initialQuery;
                 // Wait for connection then send
                 setTimeout(() => {
-                    if (isConnected && isAuthenticated) {
+                    if (isConnected) {
                         sendMessage(initialQuery);
                         chatInput.value = '';
                     }
-                }, 1000);
+                }, 500);
             }
         });
 
-        // Register guest user
-        async function registerGuestUser() {
-            try {
-                const guestEmail = `guest_${Date.now()}@genai-auto.demo`;
-                const guestPassword = 'Demo123!@#';
-                
-                const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: guestEmail,
-                        password: guestPassword,
-                        name: 'Guest User'
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    accessToken = data.access_token;
-                    localStorage.setItem('access_token', accessToken);
-                    console.log('✅ Guest user registered');
-                } else {
-                    console.error('❌ Failed to register guest user');
-                }
-            } catch (error) {
-                console.error('❌ Registration error:', error);
-            }
-        }
-
         // Connect to WebSocket
         function connectWebSocket() {
-            if (!accessToken) {
-                setTimeout(connectWebSocket, 1000);
-                return;
-            }
-
             ws = new WebSocket(WS_URL);
 
             ws.onopen = () => {
                 console.log('✅ WebSocket connected');
                 isConnected = true;
-                updateStatus('Authenticating...');
-                
-                // Send authentication
-                ws.send(JSON.stringify({
-                    type: 'auth',
-                    token: accessToken
-                }));
+                updateStatus('Online', 'success');
             };
 
             ws.onmessage = (event) => {
@@ -228,24 +178,6 @@
             console.log('WebSocket message:', data.type);
             
             switch (data.type) {
-                case 'auth_success':
-                    isAuthenticated = true;
-                    updateStatus('Online', 'success');
-                    console.log('✅ Authenticated:', data.user);
-                    break;
-
-                case 'auth_error':
-                    isAuthenticated = false;
-                    updateStatus('Auth Failed', 'error');
-                    console.error('❌ Auth failed:', data.message);
-                    // Try to re-register
-                    localStorage.removeItem('access_token');
-                    accessToken = null;
-                    registerGuestUser().then(() => {
-                        setTimeout(connectWebSocket, 1000);
-                    });
-                    break;
-
                 case 'progress':
                     updateTypingIndicator(data.message);
                     break;
@@ -271,7 +203,7 @@
             if (!message) message = chatInput.value.trim();
             if (!message) return;
 
-            if (!isConnected || !isAuthenticated) {
+            if (!isConnected) {
                 addErrorMessage('Not connected. Reconnecting...');
                 return;
             }

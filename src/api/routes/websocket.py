@@ -91,19 +91,12 @@ async def authenticate_websocket(token: Optional[str]) -> Optional[Authenticated
 @router.websocket("/ws/chat")
 async def websocket_chat(
     websocket: WebSocket,
-    token: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    WebSocket endpoint for streaming chat.
+    WebSocket endpoint for streaming chat (PoC - No authentication required).
     
     Protocol:
-    
-    Client → Server (authentication):
-    {
-        "type": "auth",
-        "token": "jwt_token_here"
-    }
     
     Client → Server (message):
     {
@@ -111,12 +104,6 @@ async def websocket_chat(
         "message": "User question here",
         "session_id": "optional-session-id",
         "customer_id": "optional-customer-id"
-    }
-    
-    Server → Client (authentication result):
-    {
-        "type": "auth_success" | "auth_error",
-        "message": "Authentication successful" | "error details"
     }
     
     Server → Client (progress updates):
@@ -156,49 +143,14 @@ async def websocket_chat(
     
     await manager.connect(websocket, client_id)
     
-    # Try to authenticate from query param
-    user = await authenticate_websocket(token)
-    authenticated = user is not None
-    
     try:
         while True:
             # Receive message
             data = await websocket.receive_json()
             message_type = data.get("type")
             
-            # Handle authentication
-            if message_type == "auth":
-                auth_token = data.get("token")
-                user = await authenticate_websocket(auth_token)
-                
-                if user:
-                    authenticated = True
-                    await manager.send_json(client_id, {
-                        "type": "auth_success",
-                        "message": "Authentication successful",
-                        "user": {
-                            "id": user.user_id,
-                            "email": user.email,
-                            "name": user.name
-                        }
-                    })
-                else:
-                    await manager.send_json(client_id, {
-                        "type": "auth_error",
-                        "message": "Invalid token"
-                    })
-                continue
-            
-            # Require authentication for messages
+            # Handle messages (no authentication required for PoC)
             if message_type == "message":
-                if not authenticated:
-                    await manager.send_json(client_id, {
-                        "type": "error",
-                        "error": "Authentication required",
-                        "code": "AUTH_REQUIRED"
-                    })
-                    continue
-                
                 # Extract message data
                 user_message = data.get("message", "")
                 session_id = data.get("session_id")
@@ -215,7 +167,6 @@ async def websocket_chat(
                 logger.info(
                     "WebSocket message received",
                     client_id=client_id,
-                    user_id=user.user_id,
                     message_length=len(user_message),
                     session_id=session_id
                 )
@@ -300,7 +251,6 @@ async def websocket_chat(
                     logger.info(
                         "WebSocket response sent",
                         client_id=client_id,
-                        user_id=user.user_id,
                         response_length=len(accumulated_response)
                     )
                 
