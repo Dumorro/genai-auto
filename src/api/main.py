@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 from src.api.config import get_settings
 from src.api.routes import auth, chat, health, documents, metrics as metrics_routes, evaluation, websocket
@@ -79,11 +79,11 @@ app.include_router(websocket.router)  # No prefix for WebSocket
 # Serve frontend static files
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
 if FRONTEND_DIR.exists():
-    # Serve index.html at root
+    # Redirect root to chat (PoC - no home page needed)
     @app.get("/")
     async def serve_home():
-        """Serve the frontend home page."""
-        return FileResponse(FRONTEND_DIR / "index.html")
+        """Redirect to chat interface."""
+        return RedirectResponse(url="/chat")
     
     # Serve chat.html
     @app.get("/chat")
