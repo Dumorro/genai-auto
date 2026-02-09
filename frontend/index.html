@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>GenAI Auto - New Chat</title>
+    <title>GenAI Auto - Automotive AI Assistant</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -58,7 +58,7 @@
     <main class="flex-1 flex flex-col items-center justify-center px-4 pb-24 relative overflow-hidden">
         <!-- Subtle Branded Background Logo -->
         <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
-            <span class="material-symbols-outlined text-[300px]">auto_awesome</span>
+            <span class="material-symbols-outlined text-[300px]">directions_car</span>
         </div>
 
         <!-- Hero Section -->
@@ -66,53 +66,63 @@
             <div class="mb-4 inline-flex items-center justify-center size-16 bg-primary/10 rounded-2xl">
                 <span class="material-symbols-outlined text-primary text-4xl font-light">smart_toy</span>
             </div>
-            <h2 class="text-3xl font-bold leading-tight mb-2">How can I help you today?</h2>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Start a new conversation or select a quick action below.</p>
+            <h2 class="text-3xl font-bold leading-tight mb-2">How can I assist you today?</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Ask about your vehicle, schedule service, or get troubleshooting help.</p>
         </div>
 
         <!-- Quick Action Grid -->
         <div class="w-full max-w-md grid grid-cols-2 gap-3 relative z-10">
-            <!-- Suggestion Card 1 -->
-            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+            <!-- Suggestion Card 1 - Specs -->
+            <button onclick="navigateToChat('What are the specs of my 2024 Honda Civic?')" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
                 <div class="size-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                    <span class="material-symbols-outlined text-2xl">description</span>
+                    <span class="material-symbols-outlined text-2xl">speed</span>
                 </div>
-                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Summarize this text</p>
-            </a>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Vehicle Specs</p>
+            </button>
 
-            <!-- Suggestion Card 2 -->
-            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
-                <div class="size-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500">
-                    <span class="material-symbols-outlined text-2xl">mail</span>
+            <!-- Suggestion Card 2 - Maintenance -->
+            <button onclick="navigateToChat('Schedule my next service appointment')" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+                <div class="size-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
+                    <span class="material-symbols-outlined text-2xl">build</span>
                 </div>
-                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Write an email</p>
-            </a>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Service & Maintenance</p>
+            </button>
 
-            <!-- Suggestion Card 3 -->
-            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
-                <div class="size-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                    <span class="material-symbols-outlined text-2xl">terminal</span>
-                </div>
-                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Code a function</p>
-            </a>
-
-            <!-- Suggestion Card 4 -->
-            <a href="chat.html" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+            <!-- Suggestion Card 3 - Troubleshoot -->
+            <button onclick="navigateToChat('My check engine light is on. What should I do?')" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
                 <div class="size-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
-                    <span class="material-symbols-outlined text-2xl">explore</span>
+                    <span class="material-symbols-outlined text-2xl">troubleshoot</span>
                 </div>
-                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Plan a trip</p>
-            </a>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Troubleshooting</p>
+            </button>
+
+            <!-- Suggestion Card 4 - Manuals -->
+            <button onclick="navigateToChat('How do I reset the oil life indicator?')" class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-3 hover:border-primary/50 transition-all cursor-pointer group">
+                <div class="size-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <span class="material-symbols-outlined text-2xl">menu_book</span>
+                </div>
+                <p class="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">Owner's Manual</p>
+            </button>
         </div>
 
-        <!-- Category Chips -->
+        <!-- Agent Category Chips -->
         <div class="w-full max-w-md mt-6 overflow-x-auto custom-scrollbar flex gap-2 whitespace-nowrap relative z-10">
-            <button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-medium">All</button>
-            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Creative</button>
-            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Coding</button>
-            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Office</button>
-            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Learning</button>
-            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium">Analysis</button>
+            <button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">smart_toy</span>
+                All Agents
+            </button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">speed</span>
+                Specs
+            </button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">build</span>
+                Maintenance
+            </button>
+            <button class="px-4 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">troubleshoot</span>
+                Troubleshoot
+            </button>
         </div>
     </main>
 
@@ -125,7 +135,7 @@
                         <textarea 
                             id="homeInput"
                             class="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 py-3 px-4 resize-none max-h-32 min-h-[48px] text-base leading-relaxed" 
-                            placeholder="Message GenAI Auto..." 
+                            placeholder="Ask about your vehicle..." 
                             rows="1"></textarea>
                         <div class="flex items-center px-2 pb-1 gap-1">
                             <button type="button" class="p-2 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
@@ -150,6 +160,11 @@
     </footer>
 
     <script>
+        // Navigate to chat with pre-filled message
+        function navigateToChat(message) {
+            window.location.href = `chat.html?q=${encodeURIComponent(message)}`;
+        }
+
         // Handle form submission - redirect to chat with message
         document.getElementById('homeForm').addEventListener('submit', function(e) {
             e.preventDefault();
